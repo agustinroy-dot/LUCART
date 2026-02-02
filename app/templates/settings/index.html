@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="window">
+    <div class="title-bar">
+        <div class="title-bar-text">Data Management</div>
+    </div>
+    <div class="window-body">
+        <h3>Export Data</h3>
+        <p>Download your data in CSV format for backup or analysis.</p>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <a href="{{ url_for('settings.export_data', type='customers') }}"><button>Export Customers</button></a>
+            <a href="{{ url_for('settings.export_data', type='orders') }}"><button>Export Orders</button></a>
+            <a href="{{ url_for('settings.export_data', type='finance') }}"><button>Export Finance</button></a>
+            <a href="{{ url_for('settings.export_data', type='inventory') }}"><button>Export Inventory</button></a>
+        </div>
+    </div>
+</div>
+{% endblock %}

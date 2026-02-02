@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="window" style="margin-bottom: 20px;">
+    <div class="title-bar">
+        <div class="title-bar-text">Quote #{{ quote.id }} - {{ quote.status }}</div>
+    </div>
+    <div class="window-body">
+        <div style="display: flex; justify-content: space-between;">
+            <div>
+                <p><strong>Customer:</strong> {{ quote.customer.name }}</p>
+                <p><strong>Date:</strong> {{ quote.date.strftime('%Y-%m-%d') }}</p>
+                <p><strong>Notes:</strong> {{ quote.notes }}</p>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <a href="{{ url_for('quotes.print_quote', id=quote.id) }}" target="_blank"><button>Print / PDF</button></a>
+                {% if quote.status == 'Draft' %}
+                <a href="{{ url_for('quotes.set_status', id=quote.id, status='Sent') }}"><button>Mark as Sent</button></a>
+                {% endif %}
+                {% if quote.status == 'Sent' %}
+                <a href="{{ url_for('quotes.set_status', id=quote.id, status='Accepted') }}"><button>Mark Accepted</button></a>
+                <a href="{{ url_for('quotes.set_status', id=quote.id, status='Rejected') }}"><button>Mark Rejected</button></a>
+                {% endif %}
+                {% if quote.status == 'Accepted' %}
+                <a href="{{ url_for('quotes.convert_to_order', id=quote.id) }}" onclick="return confirm('Convert to Order?');"><button>Convert to Order</button></a>
+                {% endif %}
+            </div>
+        </div>
+
+        <hr>
+
+        <h4>Items</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Qty</th>
+                    <th>Unit Price</th>
+                    <th>Total</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in quote.items %}
+                <tr>
+                    <td>{{ item.description }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>${{ item.unit_price }}</td>
+                    <td>${{ item.quantity * item.unit_price }}</td>
+                    <td>
+                        {% if quote.status == 'Draft' %}
+                        <a href="{{ url_for('quotes.delete_item', id=item.id) }}"><button>X</button></a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr style="background: #e0e0e0; font-weight: bold;">
+                    <td colspan="3" style="text-align: right;">Grand Total:</td>
+                    <td>${{ quote.total }}</td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+
+        {% if quote.status == 'Draft' %}
+        <fieldset style="margin-top: 20px; border: 1px solid #999; padding: 10px;">
+            <legend>Add Item</legend>
+            <form action="" method="post" style="display: flex; gap: 10px; align-items: flex-end;">
+                {{ item_form.hidden_tag() }}
+                <div class="form-group">
+                    {{ item_form.description.label }}<br>
+                    {{ item_form.description(size=40) }}
+                </div>
+                <div class="form-group">
+                    {{ item_form.quantity.label }}<br>
+                    {{ item_form.quantity(style="width: 50px") }}
+                </div>
+                <div class="form-group">
+                    {{ item_form.unit_price.label }}<br>
+                    {{ item_form.unit_price(style="width: 80px") }}
+                </div>
+                <div class="form-group">
+                    {{ item_form.submit() }}
+                </div>
+            </form>
+        </fieldset>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

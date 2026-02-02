@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="window" style="margin-bottom: 20px;">
+    <div class="title-bar">
+        <div class="title-bar-text">Order #{{ order.id }} Details</div>
+    </div>
+    <div class="window-body">
+        <div style="display: flex; gap: 20px;">
+            <div style="flex: 1;">
+                <p><strong>Customer:</strong> {{ order.customer.name }}</p>
+                <p><strong>Status:</strong> {{ order.status }}</p>
+                <p><strong>Due Date:</strong> {{ order.date_due.strftime('%Y-%m-%d') if order.date_due else '-' }}</p>
+                <p><strong>Description:</strong> {{ order.description }}</p>
+            </div>
+            <div style="flex: 1; border-left: 1px solid #ccc; padding-left: 10px;">
+                <p><strong>Price:</strong> ${{ order.price }}</p>
+                <p><strong>Payment Status:</strong> {{ order.payment_status }}</p>
+                {% if order.payment_status != 'Paid' %}
+                <a href="{{ url_for('orders.mark_paid', id=order.id) }}" onclick="return confirm('Mark as Paid? This will record an income transaction.');"><button>Mark Paid</button></a>
+                {% endif %}
+            </div>
+        </div>
+
+        <hr>
+
+        <h4>Material Usage</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Material</th>
+                    <th>Est. Qty</th>
+                    <th>Real Qty</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for om in order.materials %}
+                <tr>
+                    <td>{{ om.material.name }}</td>
+                    <td>{{ om.quantity_estimated }} {{ om.material.unit }}</td>
+                    <td>{{ om.quantity_real }} {{ om.material.unit }}</td>
+                    <td>
+                        {% if om.quantity_real == 0 %}
+                        <a href="{{ url_for('orders.deduct_material', id=om.id) }}" onclick="return confirm('Deduct from Inventory?');"><button>Confirm Use</button></a>
+                        {% else %}
+                        <span style="color: green;">Deducted</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if order.status not in ['Finished', 'Delivered', 'Cancelled'] %}
+        <fieldset style="margin-top: 20px; border: 1px solid #999; padding: 10px;">
+            <legend>Add Material</legend>
+            <form action="" method="post" style="display: flex; gap: 10px; align-items: flex-end;">
+                {{ mat_form.hidden_tag() }}
+                <div class="form-group">
+                    {{ mat_form.material_id.label }}<br>
+                    {{ mat_form.material_id() }}
+                </div>
+                <div class="form-group">
+                    {{ mat_form.quantity.label }}<br>
+                    {{ mat_form.quantity(style="width: 80px") }}
+                </div>
+                <div class="form-group">
+                    {{ mat_form.submit() }}
+                </div>
+            </form>
+        </fieldset>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

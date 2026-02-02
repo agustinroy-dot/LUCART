@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="display: flex; gap: 15px;">
+    <!-- Customer Details Card -->
+    <div class="window" style="flex: 1; min-width: 300px;">
+        <div class="title-bar">
+            <div class="title-bar-text">Customer Details</div>
+        </div>
+        <div class="window-body">
+            <p><strong>Name:</strong> {{ customer.name }}</p>
+            <p><strong>Email:</strong> {{ customer.email }}</p>
+            <p><strong>Phone:</strong> {{ customer.phone }}</p>
+            <p><strong>Address:</strong> {{ customer.address }}</p>
+            <p><strong>Notes:</strong><br>{{ customer.notes }}</p>
+            <div style="margin-top: 20px;">
+                <a href="{{ url_for('customers.edit_customer', id=customer.id) }}"><button>Edit Profile</button></a>
+                <!-- Optional: Add buttons to create order/quote for this customer directly -->
+                <!-- <a href="{{ url_for('quotes.new_quote', customer_id=customer.id) }}"><button>New Quote</button></a> -->
+            </div>
+        </div>
+    </div>
+
+    <!-- History Panel -->
+    <div style="flex: 2; display: flex; flex-direction: column; gap: 10px;">
+        <!-- Orders -->
+        <div class="window" style="flex: 1;">
+            <div class="title-bar">
+                <div class="title-bar-text">Order History</div>
+            </div>
+            <div class="window-body">
+                {% if orders %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td>#{{ order.id }}</td>
+                            <td>{{ order.date_created.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ order.status }}</td>
+                            <td>${{ order.price }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>No orders found.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quotes -->
+        <div class="window" style="flex: 1;">
+            <div class="title-bar">
+                <div class="title-bar-text">Quote History</div>
+            </div>
+            <div class="window-body">
+                {% if quotes %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for quote in quotes %}
+                        <tr>
+                            <td>Q-{{ quote.id }}</td>
+                            <td>{{ quote.date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ quote.status }}</td>
+                            <td>${{ quote.total }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>No quotes found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

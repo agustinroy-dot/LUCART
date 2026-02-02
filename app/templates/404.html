@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="window" style="max-width: 400px; margin: 50px auto; border-color: red;">
+    <div class="title-bar" style="background: red;">
+        <div class="title-bar-text">Error 404</div>
+    </div>
+    <div class="window-body">
+        <div style="text-align: center;">
+            <h3 style="color: red;">Page Not Found</h3>
+            <p>The requested file or resource was not found.</p>
+            <br>
+            <a href="{{ url_for('index') }}"><button>Return to Dashboard</button></a>
+        </div>
+    </div>
+</div>
+{% endblock %}

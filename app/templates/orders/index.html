@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+    <h3>Orders</h3>
+    <a href="{{ url_for('orders.new_order') }}"><button>New Order</button></a>
+</div>
+
+<div style="margin-bottom: 10px;">
+    <a href="{{ url_for('orders.index') }}"><button>All</button></a>
+    <a href="{{ url_for('orders.index', status='Pending') }}"><button>Pending</button></a>
+    <a href="{{ url_for('orders.index', status='In Production') }}"><button>In Production</button></a>
+    <a href="{{ url_for('orders.index', status='Finished') }}"><button>Finished</button></a>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Customer</th>
+            <th>Description</th>
+            <th>Due Date</th>
+            <th>Price</th>
+            <th>Status</th>
+            <th>Payment</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for order in orders %}
+        <tr>
+            <td>#{{ order.id }}</td>
+            <td>{{ order.customer.name }}</td>
+            <td>{{ order.description|truncate(30) }}</td>
+            <td>{{ order.date_due.strftime('%Y-%m-%d') if order.date_due else '-' }}</td>
+            <td>${{ order.price }}</td>
+            <td style="font-weight: bold; color: {% if order.status == 'In Production' %}blue{% elif order.status == 'Finished' %}green{% endif %};">
+                {{ order.status }}
+            </td>
+            <td style="color: {% if order.payment_status == 'Paid' %}green{% else %}red{% endif %};">
+                {{ order.payment_status }}
+            </td>
+            <td>
+                <a href="{{ url_for('orders.view_order', id=order.id) }}"><button>View</button></a>
+                <a href="{{ url_for('orders.edit_order', id=order.id) }}"><button>Edit</button></a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

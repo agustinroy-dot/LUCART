@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="window" style="max-width: 500px; margin: 0 auto;">
+    <div class="title-bar">
+        <div class="title-bar-text">{{ title }}</div>
+    </div>
+    <div class="window-body">
+        <form action="" method="post">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.customer_id.label }}
+                {{ form.customer_id() }}
+                {% if not form.customer_id.choices %}
+                <small style="color:red;">No customers found. Create one first.</small>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.notes.label }}
+                {{ form.notes(cols=40, rows=5) }}
+            </div>
+            <div style="text-align: right;">
+                <a href="{{ url_for('quotes.index') }}"><button type="button">Cancel</button></a>
+                {{ form.submit() }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

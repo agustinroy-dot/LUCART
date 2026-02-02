@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+    <h3>Inventory</h3>
+    <a href="{{ url_for('inventory.new_material') }}"><button>New Material</button></a>
+</div>
+
+{% if low_stock %}
+<div class="card" style="margin-bottom: 15px; border-color: red; background-color: #fff0f0;">
+    <h3 style="color: red;">Low Stock Alerts</h3>
+    <ul>
+        {% for item in low_stock %}
+        <li>{{ item.name }}: {{ item.quantity }} {{ item.unit }} remaining (Min: {{ item.min_stock }})</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Quantity</th>
+            <th>Cost (Avg)</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for m in materials %}
+        <tr {% if m.quantity <= m.min_stock %}style="background-color: #ffe6e6;"{% endif %}>
+            <td>{{ m.name }}</td>
+            <td>{{ m.type }}</td>
+            <td>{{ m.quantity }} {{ m.unit }}</td>
+            <td>${{ m.cost }}</td>
+            <td>
+                <a href="{{ url_for('inventory.update_stock', id=m.id) }}"><button>Adjust Stock</button></a>
+                <a href="{{ url_for('inventory.history', id=m.id) }}"><button>History</button></a>
+                <a href="{{ url_for('inventory.edit_material', id=m.id) }}"><button>Edit</button></a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

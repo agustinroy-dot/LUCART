@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="window" style="width: 300px; margin: 50px auto;">
+    <div class="title-bar">
+        <div class="title-bar-text">Login Required</div>
+    </div>
+    <div class="window-body">
+        <form action="" method="post">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.username.label }}
+                {{ form.username(size=32) }}
+            </div>
+            <div class="form-group">
+                {{ form.password.label }}
+                {{ form.password(size=32) }}
+            </div>
+            <div class="form-group">
+                {{ form.remember_me() }} {{ form.remember_me.label(style="display:inline") }}
+            </div>
+            <div style="text-align: right;">
+                {{ form.submit() }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

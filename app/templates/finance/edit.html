@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="window" style="max-width: 500px; margin: 0 auto;">
+    <div class="title-bar">
+        <div class="title-bar-text">{{ title }}</div>
+    </div>
+    <div class="window-body">
+        <form action="" method="post">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.date.label }}
+                {{ form.date() }}
+            </div>
+            <div class="form-group">
+                {{ form.type.label }}
+                {{ form.type() }}
+            </div>
+            <div class="form-group">
+                {{ form.category.label }}
+                {{ form.category(size=32) }}
+            </div>
+            <div class="form-group">
+                {{ form.description.label }}
+                {{ form.description(size=32) }}
+            </div>
+            <div class="form-group">
+                {{ form.amount.label }}
+                {{ form.amount() }}
+            </div>
+            <div class="form-group">
+                {{ form.is_business() }} {{ form.is_business.label(style="display:inline") }}
+            </div>
+            <div style="text-align: right;">
+                <a href="{{ url_for('finance.index') }}"><button type="button">Cancel</button></a>
+                {{ form.submit() }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

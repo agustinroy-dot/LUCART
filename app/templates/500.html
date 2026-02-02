@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="window" style="max-width: 400px; margin: 50px auto; border-color: red;">
+    <div class="title-bar" style="background: darkred;">
+        <div class="title-bar-text">Critical Error 500</div>
+    </div>
+    <div class="window-body">
+        <div style="text-align: center;">
+            <h3 style="color: red;">System Error</h3>
+            <p>An unexpected error occurred. The administrator has been notified.</p>
+            <br>
+            <a href="{{ url_for('index') }}"><button>Return to Dashboard</button></a>
+        </div>
+    </div>
+</div>
+{% endblock %}

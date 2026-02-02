@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lucart 3D</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/XP.css') }}">
+    <style>
+        body {
+            background-color: #008080;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Tahoma', sans-serif;
+        }
+        .main-window {
+            width: 95%;
+            max-width: 1200px;
+            height: 95vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .window-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 10px;
+        }
+        .nav-bar {
+            margin-bottom: 10px;
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            padding-bottom: 5px;
+        }
+        .nav-bar a { text-decoration: none; }
+        .nav-bar button { min-width: 80px; cursor: pointer; }
+
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #888;
+            padding: 15px;
+            box-shadow: inset 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .flash-messages ul { list-style: none; padding: 0; }
+        .flash-messages li { padding: 5px; margin-bottom: 5px; border: 1px solid #ccc; background: #ffffe0; }
+        .flash-messages li.error { background: #ffcccc; border-color: #ff9999; }
+        .flash-messages li.success { background: #ccffcc; border-color: #99ff99; }
+
+        /* Helpers */
+        .btn-group { display: flex; gap: 5px; margin-bottom: 10px; }
+        .form-group { margin-bottom: 10px; }
+        label { display: block; font-weight: bold; margin-bottom: 2px; }
+        input[type="text"], input[type="email"], input[type="password"], input[type="number"], select, textarea {
+            width: 100%;
+            padding: 3px;
+            box-sizing: border-box;
+        }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ccc; padding: 4px 8px; text-align: left; }
+        th { background: #f0f0f0; }
+
+        /* Dashboard Cards */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .card { border: 1px solid #999; padding: 10px; background: #f9f9f9; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
+        .card h3 { margin-top: 0; border-bottom: 1px solid #ccc; padding-bottom: 5px; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="window main-window">
+        <div class="title-bar">
+            <div class="title-bar-text">Lucart 3D - Management System</div>
+            <div class="title-bar-controls">
+                <button aria-label="Minimize"></button>
+                <button aria-label="Maximize"></button>
+                <button aria-label="Close"></button>
+            </div>
+        </div>
+        <div class="window-body">
+            {% if current_user.is_authenticated %}
+            <div class="nav-bar">
+                <a href="{{ url_for('index') }}"><button>Dashboard</button></a>
+                <a href="{{ url_for('finance.index') }}"><button>Finances</button></a>
+                <a href="{{ url_for('inventory.index') }}"><button>Inventory</button></a>
+                <a href="{{ url_for('orders.index') }}"><button>Orders</button></a>
+                <a href="{{ url_for('quotes.index') }}"><button>Quotes</button></a>
+                <a href="{{ url_for('customers.index') }}"><button>Customers</button></a>
+                <div style="flex: 1;"></div>
+                <a href="{{ url_for('settings.index') }}"><button>Data/Export</button></a>
+                <a href="{{ url_for('auth.logout') }}"><button>Logout</button></a>
+            </div>
+            {% endif %}
+
+            <div class="content-area">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    <div class="flash-messages">
+                        <ul>
+                        {% for category, message in messages %}
+                          <li class="{{ category }}">{{ message }}</li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                  {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </div>
+
+            <div class="status-bar">
+                <p class="status-bar-field">User: {{ current_user.username if current_user.is_authenticated else 'Guest' }}</p>
+                <p class="status-bar-field">Lucart 3D</p>
+                <p class="status-bar-field" style="width: 150px; text-align: right;">{{ now.strftime('%Y-%m-%d %H:%M') if now else '' }}</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

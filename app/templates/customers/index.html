@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+    <h3>Customers</h3>
+    <a href="{{ url_for('customers.new_customer') }}"><button>New Customer</button></a>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for customer in customers.items %}
+        <tr>
+            <td>{{ customer.name }}</td>
+            <td>{{ customer.email }}</td>
+            <td>{{ customer.phone }}</td>
+            <td>
+                <a href="{{ url_for('customers.view_customer', id=customer.id) }}"><button>View</button></a>
+                <a href="{{ url_for('customers.edit_customer', id=customer.id) }}"><button>Edit</button></a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if customers.pages > 1 %}
+<div class="pagination" style="margin-top: 10px; text-align: center;">
+    {% if customers.has_prev %}
+    <a href="{{ url_for('customers.index', page=customers.prev_num) }}"><button>Previous</button></a>
+    {% endif %}
+    <span>Page {{ customers.page }} of {{ customers.pages }}</span>
+    {% if customers.has_next %}
+    <a href="{{ url_for('customers.index', page=customers.next_num) }}"><button>Next</button></a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

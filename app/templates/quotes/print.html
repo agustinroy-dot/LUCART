@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quote #{{ quote.id }}</title>
+    <style>
+        body { font-family: sans-serif; padding: 40px; }
+        .header { display: flex; justify-content: space-between; margin-bottom: 40px; }
+        .logo { font-size: 24px; font-weight: bold; }
+        .details { margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        th, td { border-bottom: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #f9f9f9; }
+        .total { text-align: right; font-size: 18px; font-weight: bold; }
+        @media print {
+            button { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <button onclick="window.print()" style="margin-bottom: 20px; padding: 10px;">Print this Quote</button>
+
+    <div class="header">
+        <div class="logo">Lucart 3D</div>
+        <div style="text-align: right;">
+            <h1>QUOTE</h1>
+            <p>#{{ quote.id }}</p>
+            <p>Date: {{ quote.date.strftime('%Y-%m-%d') }}</p>
+        </div>
+    </div>
+
+    <div class="details">
+        <p><strong>To:</strong><br>
+        {{ quote.customer.name }}<br>
+        {{ quote.customer.address }}<br>
+        {{ quote.customer.email }}</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in quote.items %}
+            <tr>
+                <td>{{ item.description }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>${{ item.unit_price }}</td>
+                <td>${{ item.quantity * item.unit_price }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="total">
+        Total: ${{ quote.total }}
+    </div>
+
+    <div style="margin-top: 50px;">
+        <p><strong>Notes:</strong></p>
+        <p>{{ quote.notes }}</p>
+    </div>
+</body>
+</html>
