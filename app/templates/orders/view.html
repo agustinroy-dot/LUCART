@@ -60,6 +60,9 @@
                 <div class="form-group">
                     {{ mat_form.material_id.label }}<br>
                     {{ mat_form.material_id() }}
+                    {% for error in mat_form.material_id.errors %}
+                        <span style="color: red; font-size: 0.9em;">{{ error }}</span>
+                    {% endfor %}
                 </div>
                 <div class="form-group">
                     {{ mat_form.quantity.label }}<br>

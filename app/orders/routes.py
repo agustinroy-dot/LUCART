@@ -45,19 +45,20 @@ def view_order(id):
 
     if mat_form.validate_on_submit():
         # Check if already added?
-        # existing = OrderMaterial.query.filter_by(order_id=order.id, material_id=mat_form.material_id.data).first()
-        # For now allow multiple entries or assumes unique material per order? Multiple is fine.
-
-        om = OrderMaterial(
-            order_id=order.id,
-            material_id=mat_form.material_id.data,
-            quantity_estimated=mat_form.quantity.data,
-            quantity_real=0.0 # Confirmed later
-        )
-        db.session.add(om)
-        db.session.commit()
-        flash('Material usage estimate added.', 'success')
-        return redirect(url_for('orders.view_order', id=order.id))
+        existing = OrderMaterial.query.filter_by(order_id=order.id, material_id=mat_form.material_id.data).first()
+        if existing:
+            mat_form.material_id.errors.append("Este material ya ha sido agregado al pedido.")
+        else:
+            om = OrderMaterial(
+                order_id=order.id,
+                material_id=mat_form.material_id.data,
+                quantity_estimated=mat_form.quantity.data,
+                quantity_real=0.0 # Confirmed later
+            )
+            db.session.add(om)
+            db.session.commit()
+            flash('Material usage estimate added.', 'success')
+            return redirect(url_for('orders.view_order', id=order.id))
 
     return render_template('orders/view.html', order=order, mat_form=mat_form)
 
