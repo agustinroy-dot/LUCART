@@ -1,17 +1,16 @@
 from flask import render_template, flash, redirect, url_for, request
 from flask_login import login_required
-from sqlalchemy.orm import joinedload
 from app import db
 from app.orders import orders_bp
 from app.orders.forms import OrderForm, OrderMaterialForm, ConfirmMaterialForm
 from app.models import Order, OrderMaterial, Customer, Material, InventoryLog, Transaction
 from datetime import datetime
+from sqlalchemy.orm import joinedload
 
 @orders_bp.route('/')
 @login_required
 def index():
     status_filter = request.args.get('status')
-    # Optimization: Eager load Customer to prevent N+1 queries
     query = Order.query.options(joinedload(Order.customer))
     if status_filter:
         query = query.filter_by(status=status_filter)
