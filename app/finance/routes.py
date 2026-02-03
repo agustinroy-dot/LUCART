@@ -4,7 +4,7 @@ from app import db
 from app.finance import finance_bp
 from app.finance.forms import TransactionForm
 from app.models import Transaction
-from sqlalchemy import extract, func
+from sqlalchemy import extract, func, case
 from datetime import datetime
 
 @finance_bp.route('/')
@@ -25,8 +25,14 @@ def index():
     transactions = query.order_by(Transaction.date.desc()).all()
 
     # Summary
-    income = sum(t.amount for t in transactions if t.type == 'income')
-    expenses = sum(t.amount for t in transactions if t.type == 'expense')
+    # Optimized: Use SQL aggregation instead of Python iteration
+    sums = query.with_entities(
+        func.sum(case((Transaction.type == 'income', Transaction.amount), else_=0)),
+        func.sum(case((Transaction.type == 'expense', Transaction.amount), else_=0))
+    ).first()
+
+    income = sums[0] or 0
+    expenses = sums[1] or 0
     balance = income - expenses
 
     return render_template('finance/index.html', title='Finance', transactions=transactions,
