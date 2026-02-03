@@ -1,5 +1,6 @@
 from flask import render_template, flash, redirect, url_for, request
 from flask_login import login_required
+from sqlalchemy.orm import joinedload
 from app import db
 from app.orders import orders_bp
 from app.orders.forms import OrderForm, OrderMaterialForm
@@ -10,7 +11,8 @@ from datetime import datetime
 @login_required
 def index():
     status_filter = request.args.get('status')
-    query = Order.query
+    # Optimization: Eager load Customer to prevent N+1 queries
+    query = Order.query.options(joinedload(Order.customer))
     if status_filter:
         query = query.filter_by(status=status_filter)
     orders = query.order_by(Order.date_created.desc()).all()
