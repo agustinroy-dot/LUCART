@@ -82,7 +82,7 @@ def create_app(config_name='default'):
         pending_orders = Order.query.filter_by(status='Pending').count()
         production_orders = Order.query.filter_by(status='In Production').count()
 
-        low_stock_items = [m for m in Material.query.all() if m.quantity <= m.min_stock]
+        low_stock_items = Material.query.filter(Material.quantity <= Material.min_stock).all()
 
         now = datetime.now()
         income_month = db.session.query(db.func.sum(Transaction.amount)).filter(
