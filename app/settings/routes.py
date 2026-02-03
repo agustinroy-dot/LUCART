@@ -4,6 +4,7 @@ from app import db
 from app.settings import settings_bp
 from app.settings.forms import SettingsForm
 from app.models import Customer, Order, Transaction, Material, InventoryLog, AppSetting
+from sqlalchemy.orm import joinedload
 import csv
 import io
 
@@ -49,7 +50,7 @@ def export_data(type):
 
     elif type == 'orders':
         cw.writerow(['ID', 'Customer', 'Description', 'Price', 'Status', 'Date Created', 'Date Due'])
-        records = Order.query.all()
+        records = Order.query.options(joinedload(Order.customer)).all()
         for r in records:
             cw.writerow([r.id, r.customer.name if r.customer else 'N/A', r.description, r.price, r.status, r.date_created, r.date_due])
         filename = 'orders.csv'

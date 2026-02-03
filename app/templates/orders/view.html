@@ -42,7 +42,7 @@
                     <td>{{ om.quantity_real }} {{ om.material.unit }}</td>
                     <td>
                         {% if om.quantity_real == 0 %}
-                        <a href="{{ url_for('orders.deduct_material', id=om.id) }}" onclick="return confirm('Deduct from Inventory?');"><button>Confirm Use</button></a>
+                        <a href="{{ url_for('orders.confirm_material_usage', id=om.id) }}"><button>Confirm Use</button></a>
                         {% else %}
                         <span style="color: green;">Deducted</span>
                         {% endif %}

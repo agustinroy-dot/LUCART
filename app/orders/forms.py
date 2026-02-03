@@ -20,3 +20,7 @@ class OrderMaterialForm(FlaskForm):
     material_id = SelectField('Material', coerce=int, validators=[DataRequired()])
     quantity = FloatField('Quantity Used/Est', validators=[DataRequired()])
     submit = SubmitField('Add Material')
+
+class ConfirmMaterialForm(FlaskForm):
+    quantity_real = FloatField('Real Quantity Used', validators=[DataRequired()])
+    submit = SubmitField('Confirm & Deduct')
