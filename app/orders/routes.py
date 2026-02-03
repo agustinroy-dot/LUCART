@@ -5,12 +5,13 @@ from app.orders import orders_bp
 from app.orders.forms import OrderForm, OrderMaterialForm
 from app.models import Order, OrderMaterial, Customer, Material, InventoryLog, Transaction
 from datetime import datetime
+from sqlalchemy.orm import joinedload
 
 @orders_bp.route('/')
 @login_required
 def index():
     status_filter = request.args.get('status')
-    query = Order.query
+    query = Order.query.options(joinedload(Order.customer))
     if status_filter:
         query = query.filter_by(status=status_filter)
     orders = query.order_by(Order.date_created.desc()).all()
