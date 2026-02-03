@@ -3,27 +3,36 @@ from flask_login import login_required
 from app import db
 from app.settings import settings_bp
 from app.settings.forms import SettingsForm
-from app.models import Customer, Order, Transaction, Material, InventoryLog
+from app.models import Customer, Order, Transaction, Material, InventoryLog, AppSetting
 import csv
 import io
-
-# We need a place to store settings.
-# Since we didn't plan a Settings model, we can use a simple Key-Value table or just a single row table.
-# For simplicity in this MVP, let's assume we might add a Settings model later.
-# For now, I'll store it in a dummy way or create a quick model.
-# Actually, creating a model is better.
 
 @settings_bp.route('/', methods=['GET', 'POST'])
 @login_required
 def index():
-    # Placeholder for settings implementation.
-    # Since we are adding this now, I will create a AppSetting model dynamically or just mock it for now if DB migration is too much.
-    # But "DB migration is painless" according to the user. So I will add a model.
-    # However, to avoid alembic conflicts in this step without running `flask db migrate` again (which I should do),
-    # I will stick to the Export feature which is the main requirement here.
-    # The "Business Info" was a "Nice to have". I will prioritize Export.
+    form = SettingsForm()
+    # Fetch the singleton settings object
+    app_setting = db.session.get(AppSetting, 1)
 
-    return render_template('settings/index.html', title='Settings & Data')
+    if form.validate_on_submit():
+        if not app_setting:
+            app_setting = AppSetting(id=1)
+            db.session.add(app_setting)
+
+        app_setting.business_name = form.business_name.data
+        app_setting.address = form.address.data
+        app_setting.cuit = form.cuit.data
+
+        db.session.commit()
+        flash('Settings saved successfully.', 'success')
+        return redirect(url_for('settings.index'))
+
+    if request.method == 'GET' and app_setting:
+        form.business_name.data = app_setting.business_name
+        form.address.data = app_setting.address
+        form.cuit.data = app_setting.cuit
+
+    return render_template('settings/index.html', title='Settings & Data', form=form)
 
 @settings_bp.route('/export/<type>')
 @login_required

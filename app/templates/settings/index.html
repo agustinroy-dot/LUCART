@@ -3,17 +3,43 @@
 {% block content %}
 <div class="window">
     <div class="title-bar">
-        <div class="title-bar-text">Data Management</div>
+        <div class="title-bar-text">Settings & Data</div>
     </div>
     <div class="window-body">
-        <h3>Export Data</h3>
-        <p>Download your data in CSV format for backup or analysis.</p>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <a href="{{ url_for('settings.export_data', type='customers') }}"><button>Export Customers</button></a>
-            <a href="{{ url_for('settings.export_data', type='orders') }}"><button>Export Orders</button></a>
-            <a href="{{ url_for('settings.export_data', type='finance') }}"><button>Export Finance</button></a>
-            <a href="{{ url_for('settings.export_data', type='inventory') }}"><button>Export Inventory</button></a>
-        </div>
+        <fieldset>
+            <legend>Business Configuration</legend>
+            <form action="" method="post">
+                {{ form.hidden_tag() }}
+                <div style="margin-bottom: 10px;">
+                    {{ form.business_name.label }}<br>
+                    {{ form.business_name(style="width: 100%; max-width: 400px;") }}
+                </div>
+                <div style="margin-bottom: 10px;">
+                    {{ form.address.label }}<br>
+                    {{ form.address(style="width: 100%; max-width: 400px;") }}
+                </div>
+                <div style="margin-bottom: 10px;">
+                    {{ form.cuit.label }}<br>
+                    {{ form.cuit(style="width: 100%; max-width: 400px;") }}
+                </div>
+                <div>
+                    {{ form.submit() }}
+                </div>
+            </form>
+        </fieldset>
+
+        <br>
+
+        <fieldset>
+            <legend>Export Data</legend>
+            <p>Download your data in CSV format for backup or analysis.</p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <a href="{{ url_for('settings.export_data', type='customers') }}"><button>Export Customers</button></a>
+                <a href="{{ url_for('settings.export_data', type='orders') }}"><button>Export Orders</button></a>
+                <a href="{{ url_for('settings.export_data', type='finance') }}"><button>Export Finance</button></a>
+                <a href="{{ url_for('settings.export_data', type='inventory') }}"><button>Export Inventory</button></a>
+            </div>
+        </fieldset>
     </div>
 </div>
 {% endblock %}

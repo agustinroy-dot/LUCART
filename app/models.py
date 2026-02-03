@@ -94,3 +94,9 @@ class OrderMaterial(db.Model):
     material_id = db.Column(db.Integer, db.ForeignKey('material.id'))
     quantity_estimated = db.Column(db.Float, default=0.0)
     quantity_real = db.Column(db.Float, default=0.0)
+
+class AppSetting(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    business_name = db.Column(db.String(120))
+    address = db.Column(db.String(200))
+    cuit = db.Column(db.String(20))
