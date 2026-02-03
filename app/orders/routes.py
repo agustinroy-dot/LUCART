@@ -2,7 +2,7 @@ from flask import render_template, flash, redirect, url_for, request
 from flask_login import login_required
 from app import db
 from app.orders import orders_bp
-from app.orders.forms import OrderForm, OrderMaterialForm
+from app.orders.forms import OrderForm, OrderMaterialForm, ConfirmMaterialForm
 from app.models import Order, OrderMaterial, Customer, Material, InventoryLog, Transaction
 from datetime import datetime
 from sqlalchemy.orm import joinedload
@@ -80,9 +80,9 @@ def edit_order(id):
         return redirect(url_for('orders.view_order', id=order.id))
     return render_template('orders/edit.html', title='Edit Order', form=form)
 
-@orders_bp.route('/material/<int:id>/deduct')
+@orders_bp.route('/material/<int:id>/deduct', methods=['GET', 'POST'])
 @login_required
-def deduct_material(id):
+def confirm_material_usage(id):
     # This ID is the OrderMaterial ID
     om = OrderMaterial.query.get_or_404(id)
 
@@ -91,28 +91,38 @@ def deduct_material(id):
         flash('Material already deducted for this item.', 'warning')
         return redirect(url_for('orders.view_order', id=om.order_id))
 
-    material = om.material
+    form = ConfirmMaterialForm()
 
-    if material.quantity < om.quantity_estimated:
-        flash(f'Not enough stock of {material.name}!', 'error')
+    if form.validate_on_submit():
+        real_qty = form.quantity_real.data
+        material = om.material
+
+        if material.quantity < real_qty:
+             flash(f'Not enough stock of {material.name} (Available: {material.quantity} {material.unit}) for usage of {real_qty} {material.unit}!', 'error')
+             return render_template('orders/confirm_material.html', om=om, form=form)
+
+        # Deduct
+        material.quantity -= real_qty
+        om.quantity_real = real_qty
+
+        # Log
+        log = InventoryLog(
+            material_id=material.id,
+            change_amount=real_qty,
+            type='out',
+            reason=f"Order #{om.order_id}",
+            date=datetime.utcnow()
+        )
+        db.session.add(log)
+        db.session.commit()
+        flash(f'Stock deducted successfully ({real_qty} {material.unit}).', 'success')
         return redirect(url_for('orders.view_order', id=om.order_id))
 
-    # Deduct
-    material.quantity -= om.quantity_estimated
-    om.quantity_real = om.quantity_estimated # Set real to est
+    # Pre-fill
+    if request.method == 'GET':
+        form.quantity_real.data = om.quantity_estimated
 
-    # Log
-    log = InventoryLog(
-        material_id=material.id,
-        change_amount=om.quantity_estimated,
-        type='out',
-        reason=f"Order #{om.order_id}",
-        date=datetime.utcnow()
-    )
-    db.session.add(log)
-    db.session.commit()
-    flash('Stock deducted successfully.', 'success')
-    return redirect(url_for('orders.view_order', id=om.order_id))
+    return render_template('orders/confirm_material.html', om=om, form=form)
 
 @orders_bp.route('/<int:id>/pay')
 @login_required
