@@ -5,7 +5,7 @@ from app.extensions import db, login
 
 @login.user_loader
 def load_user(id):
-    return User.query.get(int(id))
+    return db.session.get(User, int(id))
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -94,3 +94,22 @@ class OrderMaterial(db.Model):
     material_id = db.Column(db.Integer, db.ForeignKey('material.id'))
     quantity_estimated = db.Column(db.Float, default=0.0)
     quantity_real = db.Column(db.Float, default=0.0)
+
+class AppSetting(db.Model):
+    key = db.Column(db.String(50), primary_key=True)
+    value = db.Column(db.Text)
+
+    @staticmethod
+    def get_value(key, default=None):
+        setting = db.session.get(AppSetting, key)
+        return setting.value if setting else default
+
+    @staticmethod
+    def set_value(key, value):
+        setting = db.session.get(AppSetting, key)
+        if not setting:
+            setting = AppSetting(key=key, value=value)
+            db.session.add(setting)
+        else:
+            setting.value = value
+        db.session.commit()

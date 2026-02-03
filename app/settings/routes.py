@@ -3,27 +3,27 @@ from flask_login import login_required
 from app import db
 from app.settings import settings_bp
 from app.settings.forms import SettingsForm
-from app.models import Customer, Order, Transaction, Material, InventoryLog
+from app.models import Customer, Order, Transaction, Material, InventoryLog, AppSetting
 import csv
 import io
-
-# We need a place to store settings.
-# Since we didn't plan a Settings model, we can use a simple Key-Value table or just a single row table.
-# For simplicity in this MVP, let's assume we might add a Settings model later.
-# For now, I'll store it in a dummy way or create a quick model.
-# Actually, creating a model is better.
 
 @settings_bp.route('/', methods=['GET', 'POST'])
 @login_required
 def index():
-    # Placeholder for settings implementation.
-    # Since we are adding this now, I will create a AppSetting model dynamically or just mock it for now if DB migration is too much.
-    # But "DB migration is painless" according to the user. So I will add a model.
-    # However, to avoid alembic conflicts in this step without running `flask db migrate` again (which I should do),
-    # I will stick to the Export feature which is the main requirement here.
-    # The "Business Info" was a "Nice to have". I will prioritize Export.
+    form = SettingsForm()
+    if form.validate_on_submit():
+        AppSetting.set_value('business_name', form.business_name.data)
+        AppSetting.set_value('address', form.address.data)
+        AppSetting.set_value('cuit', form.cuit.data)
+        flash('Settings saved successfully.', 'success')
+        return redirect(url_for('settings.index'))
 
-    return render_template('settings/index.html', title='Settings & Data')
+    if request.method == 'GET':
+        form.business_name.data = AppSetting.get_value('business_name')
+        form.address.data = AppSetting.get_value('address')
+        form.cuit.data = AppSetting.get_value('cuit')
+
+    return render_template('settings/index.html', title='Settings & Data', form=form)
 
 @settings_bp.route('/export/<type>')
 @login_required
