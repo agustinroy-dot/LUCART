@@ -1,70 +1,50 @@
 {% extends "base.html" %}
-
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-    <h3>Finance: {{ month }}/{{ year }}</h3>
-    <a href="{{ url_for('finance.new_transaction') }}"><button>New Transaction</button></a>
-</div>
-
-<!-- Filters -->
-<div class="card" style="margin-bottom: 10px; padding: 5px;">
-    <form method="get" style="display: flex; gap: 10px; align-items: center;">
-        <label>Month:</label>
-        <input type="number" name="month" value="{{ month }}" min="1" max="12" style="width: 50px;">
-        <label>Year:</label>
-        <input type="number" name="year" value="{{ year }}" style="width: 60px;">
-        <label>Scope:</label>
-        <select name="scope">
-            <option value="business" {% if scope == 'business' %}selected{% endif %}>Business Only</option>
-            <option value="personal" {% if scope == 'personal' %}selected{% endif %}>Personal Only</option>
-            <option value="all" {% if scope == 'all' %}selected{% endif %}>All</option>
-        </select>
-        <button type="submit">Filter</button>
-    </form>
-</div>
-
-<!-- Summary -->
-<div class="dashboard-grid" style="margin-bottom: 15px;">
-    <div class="card">
-        <h3>Income</h3>
-        <p style="color: green; font-size: 1.2em;">${{ income|round(2) }}</p>
-    </div>
-    <div class="card">
-        <h3>Expenses</h3>
-        <p style="color: red; font-size: 1.2em;">${{ expenses|round(2) }}</p>
-    </div>
-    <div class="card">
-        <h3>Balance</h3>
-        <p style="font-weight: bold; font-size: 1.2em;">${{ balance|round(2) }}</p>
+<div class="header">
+    <h1 class="page-title">Finance</h1>
+    <div class="actions">
+        <a href="{{ url_for('finance.new_transaction') }}" class="btn btn-primary">+ New Transaction</a>
     </div>
 </div>
 
-<table>
-    <thead>
-        <tr>
-            <th>Date</th>
-            <th>Type</th>
-            <th>Category</th>
-            <th>Description</th>
-            <th>Scope</th>
-            <th>Amount</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for t in transactions %}
-        <tr>
-            <td>{{ t.date.strftime('%Y-%m-%d') }}</td>
-            <td style="color: {{ 'green' if t.type == 'income' else 'red' }};">{{ t.type|capitalize }}</td>
-            <td>{{ t.category }}</td>
-            <td>{{ t.description }}</td>
-            <td>{{ 'Business' if t.is_business else 'Personal' }}</td>
-            <td>${{ t.amount }}</td>
-            <td>
-                <a href="{{ url_for('finance.delete_transaction', id=t.id) }}" onclick="return confirm('Delete?');"><button>Delete</button></a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="dashboard-grid mb-20">
+    <div class="card stat-card">
+        <div class="stat-label">Income</div>
+        <div class="stat-value" style="color: var(--success-color);">${{ "%.2f"|format(income) }}</div>
+    </div>
+    <div class="card stat-card">
+        <div class="stat-label">Expenses</div>
+        <div class="stat-value" style="color: var(--error-color);">${{ "%.2f"|format(expenses) }}</div>
+    </div>
+    <div class="card stat-card">
+        <div class="stat-label">Net Profit</div>
+        <div class="stat-value">${{ "%.2f"|format(balance) }}</div>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Transactions</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in transactions %}
+            <tr>
+                <td>{{ t.date.strftime('%Y-%m-%d') }}</td>
+                <td><span class="badge badge-{{ 'success' if t.type=='income' else 'error' }}">{{ t.type|capitalize }}</span></td>
+                <td>{{ t.category }}</td>
+                <td>{{ t.description }}</td>
+                <td style="font-weight: bold;">${{ "%.2f"|format(t.amount) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

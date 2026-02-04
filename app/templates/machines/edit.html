@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="header">
+    <h1 class="page-title">{{ title }}</h1>
+    <a href="{{ url_for('machines.index') }}" class="btn btn-secondary">Cancel</a>
+</div>
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <form method="post">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.name.label }}
+            {{ form.name(class="form-control") }}
+        </div>
+        <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="form-group">
+                {{ form.hourly_cost.label }}
+                {{ form.hourly_cost(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.power_consumption_watts.label }}
+                {{ form.power_consumption_watts(class="form-control") }}
+            </div>
+        </div>
+        <div class="form-group">
+            {{ form.status.label }}
+            {{ form.status(class="form-control") }}
+        </div>
+        <div style="margin-top: 20px; text-align: right;">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+</div>
+{% endblock %}

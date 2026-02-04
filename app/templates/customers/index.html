@@ -1,44 +1,37 @@
 {% extends "base.html" %}
-
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-    <h3>Customers</h3>
-    <a href="{{ url_for('customers.new_customer') }}"><button>New Customer</button></a>
+<div class="header">
+    <h1 class="page-title">Customers</h1>
+    <div class="actions">
+        <a href="{{ url_for('customers.new_customer') }}" class="btn btn-primary">+ New Customer</a>
+    </div>
 </div>
 
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for customer in customers.items %}
-        <tr>
-            <td>{{ customer.name }}</td>
-            <td>{{ customer.email }}</td>
-            <td>{{ customer.phone }}</td>
-            <td>
-                <a href="{{ url_for('customers.view_customer', id=customer.id) }}"><button>View</button></a>
-                <a href="{{ url_for('customers.edit_customer', id=customer.id) }}"><button>Edit</button></a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
-{% if customers.pages > 1 %}
-<div class="pagination" style="margin-top: 10px; text-align: center;">
-    {% if customers.has_prev %}
-    <a href="{{ url_for('customers.index', page=customers.prev_num) }}"><button>Previous</button></a>
-    {% endif %}
-    <span>Page {{ customers.page }} of {{ customers.pages }}</span>
-    {% if customers.has_next %}
-    <a href="{{ url_for('customers.index', page=customers.next_num) }}"><button>Next</button></a>
-    {% endif %}
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for customer in customers %}
+            <tr>
+                <td>{{ customer.name }}</td>
+                <td>{{ customer.email }}</td>
+                <td>{{ customer.phone }}</td>
+                <td>{{ customer.address }}</td>
+                <td>
+                    <a href="{{ url_for('customers.edit_customer', id=customer.id) }}" class="btn btn-sm btn-secondary">Edit</a>
+                    <a href="{{ url_for('quotes.new_quote', customer_id=customer.id) }}" class="btn btn-sm btn-primary">New Quote</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
-{% endif %}
 {% endblock %}

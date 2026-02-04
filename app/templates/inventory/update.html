@@ -1,44 +1,40 @@
 {% extends "base.html" %}
-
 {% block content %}
-<div class="window" style="max-width: 500px; margin: 0 auto;">
-    <div class="title-bar">
-        <div class="title-bar-text">Update Stock: {{ material.name }}</div>
-    </div>
-    <div class="window-body">
-        <p>Current Stock: <strong>{{ material.quantity }} {{ material.unit }}</strong></p>
+<div class="header">
+    <h1 class="page-title">Update Stock</h1>
+    <a href="{{ url_for('inventory.index') }}" class="btn btn-secondary">Cancel</a>
+</div>
+<div class="card" style="max-width: 500px; margin: 0 auto;">
+    <p><strong>Item:</strong> {{ material.name }} (Current: {{ material.quantity }} {{ material.unit }})</p>
+    <form method="post">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.type.label }}
+            {{ form.type(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.change_amount.label }}
+            {{ form.change_amount(class="form-control", placeholder="Amount") }}
+        </div>
+        <div class="form-group">
+            {{ form.reason.label }}
+            {{ form.reason(class="form-control") }}
+        </div>
 
-        <form action="" method="post">
-            {{ form.hidden_tag() }}
+        <div style="border-top: 1px solid #eee; margin-top: 20px; padding-top: 15px;">
+            <p style="font-size: 14px; font-weight: 600; color: #666;">If Purchasing (Adding Stock):</p>
             <div class="form-group">
-                {{ form.type.label }}
-                {{ form.type() }}
+                {{ form.cost_total.label }}
+                {{ form.cost_total(class="form-control") }}
             </div>
             <div class="form-group">
-                {{ form.change_amount.label }}
-                {{ form.change_amount() }}
+                {{ form.create_expense() }} {{ form.create_expense.label(style="display:inline") }}
             </div>
-            <div class="form-group">
-                {{ form.reason.label }}
-                {{ form.reason(size=32) }}
-            </div>
+        </div>
 
-            <fieldset style="margin-top: 10px; padding: 10px; border: 1px solid #ccc;">
-                <legend>Purchase Details (If Adding)</legend>
-                <div class="form-group">
-                    {{ form.cost_total.label }}
-                    {{ form.cost_total() }}
-                </div>
-                <div class="form-group">
-                    {{ form.create_expense() }} {{ form.create_expense.label(style="display:inline") }}
-                </div>
-            </fieldset>
-
-            <div style="text-align: right; margin-top: 10px;">
-                <a href="{{ url_for('inventory.index') }}"><button type="button">Cancel</button></a>
-                {{ form.submit() }}
-            </div>
-        </form>
-    </div>
+        <div style="margin-top: 20px; text-align: right;">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
 </div>
 {% endblock %}

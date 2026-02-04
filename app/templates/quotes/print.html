@@ -2,46 +2,77 @@
 <html>
 <head>
     <title>Quote #{{ quote.id }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: sans-serif; padding: 40px; }
-        .header { display: flex; justify-content: space-between; margin-bottom: 40px; }
-        .logo { font-size: 24px; font-weight: bold; }
-        .details { margin-bottom: 30px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-        th, td { border-bottom: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background: #f9f9f9; }
-        .total { text-align: right; font-size: 18px; font-weight: bold; }
+        body { font-family: 'Inter', sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; color: #333; }
+        .header { display: flex; justify-content: space-between; margin-bottom: 50px; border-bottom: 2px solid #eee; padding-bottom: 20px; }
+        .logo img { max-width: 150px; }
+        .company-info { text-align: right; font-size: 14px; color: #666; }
+
+        .quote-title { font-size: 32px; font-weight: 700; margin: 0 0 10px 0; color: #111; }
+        .quote-meta { font-size: 14px; color: #666; }
+
+        .client-section { margin-bottom: 40px; display: flex; justify-content: space-between; }
+        .client-box h3 { font-size: 14px; text-transform: uppercase; color: #999; margin-bottom: 10px; }
+        .client-box p { margin: 2px 0; font-weight: 600; }
+
+        table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+        th { text-align: left; padding: 12px; border-bottom: 2px solid #eee; font-size: 12px; text-transform: uppercase; color: #999; }
+        td { padding: 15px 12px; border-bottom: 1px solid #eee; font-size: 14px; }
+
+        .total-section { text-align: right; }
+        .total-row { font-size: 16px; margin-bottom: 10px; }
+        .grand-total { font-size: 24px; font-weight: 700; color: #0071e3; margin-top: 10px; }
+
+        .notes { margin-top: 60px; padding-top: 20px; border-top: 1px solid #eee; font-size: 13px; color: #666; }
+
         @media print {
-            button { display: none; }
+            .no-print { display: none; }
+            body { padding: 0; }
         }
     </style>
 </head>
 <body>
-    <button onclick="window.print()" style="margin-bottom: 20px; padding: 10px;">Print this Quote</button>
+    <div class="no-print" style="margin-bottom: 20px; text-align: right;">
+        <button onclick="window.print()" style="padding: 10px 20px; background: #0071e3; color: white; border: none; border-radius: 5px; cursor: pointer;">Print / Save as PDF</button>
+        <button onclick="window.close()" style="padding: 10px 20px; background: #eee; border: none; border-radius: 5px; cursor: pointer;">Close</button>
+    </div>
 
     <div class="header">
-        <div class="logo">Lucart 3D</div>
-        <div style="text-align: right;">
-            <h1>QUOTE</h1>
-            <p>#{{ quote.id }}</p>
-            <p>Date: {{ quote.date.strftime('%Y-%m-%d') }}</p>
+        <div class="logo">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Lucart 3D">
+        </div>
+        <div class="company-info">
+            <p><strong>Lucart 3D</strong></p>
+            <p>123 3D Print Lane</p>
+            <p>Innovation City, 12345</p>
+            <p>contact@lucart3d.com</p>
         </div>
     </div>
 
-    <div class="details">
-        <p><strong>To:</strong><br>
-        {{ quote.customer.name }}<br>
-        {{ quote.customer.address }}<br>
-        {{ quote.customer.email }}</p>
+    <div class="client-section">
+        <div class="client-box">
+            <h3>Bill To</h3>
+            <p>{{ quote.customer.name }}</p>
+            <p>{{ quote.customer.email }}</p>
+            <p>{{ quote.customer.address }}</p>
+            <p>{{ quote.customer.phone }}</p>
+        </div>
+        <div style="text-align: right;">
+            <h1 class="quote-title">QUOTE</h1>
+            <p class="quote-meta">Quote #: {{ quote.id }}</p>
+            <p class="quote-meta">Date: {{ quote.date.strftime('%Y-%m-%d') }}</p>
+            <p class="quote-meta">Valid Until: {{ quote.date.strftime('%Y-%m-%d') }} (30 days)</p>
+        </div>
     </div>
 
     <table>
         <thead>
             <tr>
-                <th>Description</th>
-                <th>Quantity</th>
-                <th>Unit Price</th>
-                <th>Total</th>
+                <th width="50%">Description</th>
+                <th width="15%">Quantity</th>
+                <th width="20%">Unit Price</th>
+                <th width="15%" style="text-align: right;">Amount</th>
             </tr>
         </thead>
         <tbody>
@@ -49,20 +80,23 @@
             <tr>
                 <td>{{ item.description }}</td>
                 <td>{{ item.quantity }}</td>
-                <td>${{ item.unit_price }}</td>
-                <td>${{ item.quantity * item.unit_price }}</td>
+                <td>${{ "%.2f"|format(item.unit_price) }}</td>
+                <td style="text-align: right;">${{ "%.2f"|format(item.quantity * item.unit_price) }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 
-    <div class="total">
-        Total: ${{ quote.total }}
+    <div class="total-section">
+        <div class="total-row">Subtotal: ${{ "%.2f"|format(quote.total) }}</div>
+        <div class="total-row">Tax (0%): $0.00</div>
+        <div class="grand-total">Total: ${{ "%.2f"|format(quote.total) }}</div>
     </div>
 
-    <div style="margin-top: 50px;">
-        <p><strong>Notes:</strong></p>
+    <div class="notes">
+        <h3>Notes & Terms</h3>
         <p>{{ quote.notes }}</p>
+        <p style="margin-top: 10px;">Thank you for your business!</p>
     </div>
 </body>
 </html>

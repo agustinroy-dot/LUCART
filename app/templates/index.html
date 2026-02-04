@@ -1,42 +1,58 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Dashboard</h2>
+<div class="header">
+    <h1 class="page-title">Dashboard</h1>
+    <div class="actions">
+        <a href="{{ url_for('quotes.new_quote') }}" class="btn btn-primary">+ New Quote</a>
+    </div>
+</div>
+
 <div class="dashboard-grid">
-    <div class="card">
-        <h3>Quick Actions</h3>
-        <p>
-            <a href="{{ url_for('orders.new_order') }}"><button>New Order</button></a>
-            <a href="{{ url_for('quotes.new_quote') }}"><button>New Quote</button></a>
-            <a href="{{ url_for('customers.new_customer') }}"><button>New Customer</button></a>
-        </p>
+    <div class="card stat-card">
+        <div class="stat-label">Pending Orders</div>
+        <div class="stat-value">{{ pending_orders_count }}</div>
+        <a href="{{ url_for('orders.index', status='Pending') }}" style="color: var(--accent-color); font-size: 13px;">View Pending</a>
     </div>
 
-    <div class="card">
-        <h3>Active Orders</h3>
-        <p>Pending: {{ pending_orders_count|default(0) }}</p>
-        <p>In Production: {{ production_orders_count|default(0) }}</p>
-        <a href="{{ url_for('orders.index') }}"><button>View All</button></a>
+    <div class="card stat-card">
+        <div class="stat-label">In Production</div>
+        <div class="stat-value">{{ production_orders_count }}</div>
+        <a href="{{ url_for('orders.index', status='In Production') }}" style="color: var(--accent-color); font-size: 13px;">View Production</a>
     </div>
 
-    <div class="card">
-        <h3>Inventory Alerts</h3>
-        {% if low_stock_items %}
-            <ul style="color: red;">
+    <div class="card stat-card">
+        <div class="stat-label">Income (This Month)</div>
+        <div class="stat-value">${{ "%.2f"|format(income_month) }}</div>
+        <div class="stat-label">Expenses: ${{ "%.2f"|format(expense_month) }}</div>
+    </div>
+</div>
+
+<div class="card mt-20">
+    <h3>Low Stock Alerts</h3>
+    {% if low_stock_items %}
+    <table>
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Current Stock</th>
+                <th>Min Stock</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
             {% for item in low_stock_items %}
-                <li>{{ item.name }} ({{ item.quantity }} {{ item.unit }})</li>
+            <tr>
+                <td>{{ item.name }}</td>
+                <td style="color: var(--error-color); font-weight: bold;">{{ item.quantity }} {{ item.unit }}</td>
+                <td>{{ item.min_stock }} {{ item.unit }}</td>
+                <td><a href="{{ url_for('inventory.update_stock', id=item.id) }}" class="btn btn-sm btn-secondary">Restock</a></td>
+            </tr>
             {% endfor %}
-            </ul>
-        {% else %}
-            <p>All stock levels OK.</p>
-        {% endif %}
-    </div>
-
-    <div class="card">
-        <h3>Finance (This Month)</h3>
-        <p>Income: ${{ income_month|default(0)|round(2) }}</p>
-        <p>Expenses: ${{ expense_month|default(0)|round(2) }}</p>
-        <p><strong>Net: ${{ (income_month|default(0) - expense_month|default(0))|round(2) }}</strong></p>
-    </div>
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: var(--text-secondary);">All inventory levels are healthy.</p>
+    {% endif %}
 </div>
 {% endblock %}

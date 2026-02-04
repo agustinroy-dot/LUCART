@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="header">
+    <h1 class="page-title">Suppliers</h1>
+    <div class="actions">
+        <a href="{{ url_for('suppliers.new_supplier') }}" class="btn btn-primary">+ New Supplier</a>
+    </div>
+</div>
+
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Contact Info</th>
+                <th>Notes</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for supplier in suppliers %}
+            <tr>
+                <td>{{ supplier.name }}</td>
+                <td>{{ supplier.contact_info }}</td>
+                <td>{{ supplier.notes }}</td>
+                <td>
+                    <a href="{{ url_for('suppliers.edit_supplier', id=supplier.id) }}" class="btn btn-sm btn-secondary">Edit</a>
+                    <a href="{{ url_for('suppliers.delete_supplier', id=supplier.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
