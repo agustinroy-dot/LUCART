@@ -47,6 +47,12 @@ def create_app(config_name='default'):
     app.register_blueprint(customers_bp, url_prefix='/customers')
 
     from app.settings import settings_bp
+
+    from app.machines import machines_bp
+    app.register_blueprint(machines_bp, url_prefix="/machines")
+
+    from app.suppliers import suppliers_bp
+    app.register_blueprint(suppliers_bp, url_prefix="/suppliers")
     app.register_blueprint(settings_bp, url_prefix='/settings')
 
     from app.models import User # Import models to ensure they are registered with SQLAlchemy
