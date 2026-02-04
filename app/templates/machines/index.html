@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="header">
+    <h1 class="page-title">Machines</h1>
+    <div class="actions">
+        <a href="{{ url_for('machines.new_machine') }}" class="btn btn-primary">+ New Machine</a>
+    </div>
+</div>
+
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Hourly Cost</th>
+                <th>Power (W)</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for machine in machines %}
+            <tr>
+                <td>{{ machine.name }}</td>
+                <td>${{ machine.hourly_cost }}/h</td>
+                <td>{{ machine.power_consumption_watts }} W</td>
+                <td><span class="badge badge-{{ 'success' if machine.status=='Active' else 'warning' }}">{{ machine.status }}</span></td>
+                <td>
+                    <a href="{{ url_for('machines.edit_machine', id=machine.id) }}" class="btn btn-sm btn-secondary">Edit</a>
+                    <a href="{{ url_for('machines.delete_machine', id=machine.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

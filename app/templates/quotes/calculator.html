@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="header">
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <a href="{{ url_for('quotes.view_quote', id=quote.id) }}" class="btn btn-sm btn-secondary">&larr; Cancel</a>
+        <h1 class="page-title">Price Calculator</h1>
+    </div>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <form method="post">
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+            {{ form.description.label }}
+            {{ form.description(class="form-control") }}
+        </div>
+
+        <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="form-group">
+                {{ form.machine_id.label }}
+                {{ form.machine_id(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.material_id.label }}
+                {{ form.material_id(class="form-control") }}
+            </div>
+        </div>
+
+        <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="form-group">
+                {{ form.weight_g.label }}
+                {{ form.weight_g(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.print_time_h.label }}
+                {{ form.print_time_h(class="form-control") }}
+            </div>
+        </div>
+
+        <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="form-group">
+                {{ form.labor_time_h.label }}
+                {{ form.labor_time_h(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.margin.label }}
+                {{ form.margin(class="form-control") }}
+            </div>
+        </div>
+
+        <div style="margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; font-size: 14px; color: #666;">
+            <p><strong>Note:</strong> Pricing is based on global rates configured in Settings.</p>
+        </div>
+
+        <div style="margin-top: 30px; text-align: right;">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+</div>
+{% endblock %}

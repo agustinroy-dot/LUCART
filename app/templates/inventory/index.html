@@ -1,46 +1,40 @@
 {% extends "base.html" %}
-
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-    <h3>Inventory</h3>
-    <a href="{{ url_for('inventory.new_material') }}"><button>New Material</button></a>
+<div class="header">
+    <h1 class="page-title">Inventory</h1>
+    <div class="actions">
+        <a href="{{ url_for('inventory.new_material') }}" class="btn btn-primary">+ Add Item</a>
+    </div>
 </div>
 
-{% if low_stock %}
-<div class="card" style="margin-bottom: 15px; border-color: red; background-color: #fff0f0;">
-    <h3 style="color: red;">Low Stock Alerts</h3>
-    <ul>
-        {% for item in low_stock %}
-        <li>{{ item.name }}: {{ item.quantity }} {{ item.unit }} remaining (Min: {{ item.min_stock }})</li>
-        {% endfor %}
-    </ul>
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Quantity</th>
+                <th>Cost/Unit</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in materials %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.type }}</td>
+                <td style="{{ 'color:var(--error-color);font-weight:bold;' if item.quantity <= item.min_stock else '' }}">
+                    {{ item.quantity }} {{ item.unit }}
+                </td>
+                <td>${{ item.cost }}</td>
+                <td>
+                    <a href="{{ url_for('inventory.edit_material', id=item.id) }}" class="btn btn-sm btn-secondary">Edit</a>
+                    <a href="{{ url_for('inventory.update_stock', id=item.id) }}" class="btn btn-sm btn-secondary">Update Stock</a>
+                    <a href="{{ url_for('inventory.history', id=item.id) }}" class="btn btn-sm btn-secondary">History</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
-{% endif %}
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Quantity</th>
-            <th>Cost (Avg)</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for m in materials %}
-        <tr {% if m.quantity <= m.min_stock %}style="background-color: #ffe6e6;"{% endif %}>
-            <td>{{ m.name }}</td>
-            <td>{{ m.type }}</td>
-            <td>{{ m.quantity }} {{ m.unit }}</td>
-            <td>${{ m.cost }}</td>
-            <td>
-                <a href="{{ url_for('inventory.update_stock', id=m.id) }}"><button>Adjust Stock</button></a>
-                <a href="{{ url_for('inventory.history', id=m.id) }}"><button>History</button></a>
-                <a href="{{ url_for('inventory.edit_material', id=m.id) }}"><button>Edit</button></a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
 {% endblock %}

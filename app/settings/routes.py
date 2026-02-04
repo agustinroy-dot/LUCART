@@ -1,30 +1,43 @@
-from flask import render_template, flash, redirect, url_for, Response, request
+from flask import render_template, flash, redirect, url_for, Response, request, current_app
 from flask_login import login_required
 from app import db
 from app.settings import settings_bp
 from app.settings.forms import SettingsForm
-from app.models import Customer, Order, Transaction, Material, InventoryLog
+from app.models import Customer, Order, Transaction, Material, InventoryLog, AppSetting
 from sqlalchemy.orm import joinedload
 import csv
 import io
-
-# We need a place to store settings.
-# Since we didn't plan a Settings model, we can use a simple Key-Value table or just a single row table.
-# For simplicity in this MVP, let's assume we might add a Settings model later.
-# For now, I'll store it in a dummy way or create a quick model.
-# Actually, creating a model is better.
+import os
+from werkzeug.utils import secure_filename
 
 @settings_bp.route('/', methods=['GET', 'POST'])
 @login_required
 def index():
-    # Placeholder for settings implementation.
-    # Since we are adding this now, I will create a AppSetting model dynamically or just mock it for now if DB migration is too much.
-    # But "DB migration is painless" according to the user. So I will add a model.
-    # However, to avoid alembic conflicts in this step without running `flask db migrate` again (which I should do),
-    # I will stick to the Export feature which is the main requirement here.
-    # The "Business Info" was a "Nice to have". I will prioritize Export.
+    form = SettingsForm()
 
-    return render_template('settings/index.html', title='Settings & Data')
+    if form.validate_on_submit():
+        AppSetting.set('electricity_rate', form.electricity_rate.data)
+        AppSetting.set('labor_rate', form.labor_rate.data)
+        AppSetting.set('default_margin', form.default_margin.data)
+        AppSetting.set('consumables_cost', form.consumables_cost.data)
+
+        if form.logo.data:
+            file = form.logo.data
+            filename = 'logo.png' # Force rename to keep it simple for templates
+            file.save(os.path.join(current_app.root_path, 'static/img', filename))
+            flash('Logo updated successfully!', 'success')
+
+        flash('Settings updated successfully.', 'success')
+        return redirect(url_for('settings.index'))
+
+    # Pre-populate form
+    if request.method == 'GET':
+        form.electricity_rate.data = float(AppSetting.get('electricity_rate', 0.25))
+        form.labor_rate.data = float(AppSetting.get('labor_rate', 20.0))
+        form.default_margin.data = float(AppSetting.get('default_margin', 0.30))
+        form.consumables_cost.data = float(AppSetting.get('consumables_cost', 2.0))
+
+    return render_template('settings/index.html', title='Settings & Data', form=form)
 
 @settings_bp.route('/export/<type>')
 @login_required

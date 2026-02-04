@@ -1,18 +1,54 @@
 {% extends "base.html" %}
-
 {% block content %}
-<div class="window">
-    <div class="title-bar">
-        <div class="title-bar-text">Data Management</div>
+<div class="header">
+    <h1 class="page-title">Settings</h1>
+</div>
+
+<div class="dashboard-grid">
+    <div class="card">
+        <h3>Pricing Constants</h3>
+        <form method="post" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.electricity_rate.label }}
+                {{ form.electricity_rate(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.labor_rate.label }}
+                {{ form.labor_rate(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.default_margin.label }}
+                {{ form.default_margin(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.consumables_cost.label }}
+                {{ form.consumables_cost(class="form-control") }}
+            </div>
+
+            <div style="border-top: 1px solid #eee; margin-top: 20px; padding-top: 15px;">
+                <label>Company Logo</label>
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <img src="{{ url_for('static', filename='img/logo.png') }}" style="height: 50px;">
+                    {{ form.logo(class="form-control") }}
+                </div>
+                <small style="color: #666;">Will replace the current logo everywhere.</small>
+            </div>
+
+            <div style="margin-top: 20px;">
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
     </div>
-    <div class="window-body">
+
+    <div class="card">
         <h3>Export Data</h3>
-        <p>Download your data in CSV format for backup or analysis.</p>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <a href="{{ url_for('settings.export_data', type='customers') }}"><button>Export Customers</button></a>
-            <a href="{{ url_for('settings.export_data', type='orders') }}"><button>Export Orders</button></a>
-            <a href="{{ url_for('settings.export_data', type='finance') }}"><button>Export Finance</button></a>
-            <a href="{{ url_for('settings.export_data', type='inventory') }}"><button>Export Inventory</button></a>
+        <p>Download your data in CSV format.</p>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <a href="{{ url_for('settings.export_data', type='customers') }}" class="btn btn-secondary">Export Customers</a>
+            <a href="{{ url_for('settings.export_data', type='orders') }}" class="btn btn-secondary">Export Orders</a>
+            <a href="{{ url_for('settings.export_data', type='finance') }}" class="btn btn-secondary">Export Transactions</a>
+            <a href="{{ url_for('settings.export_data', type='inventory') }}" class="btn btn-secondary">Export Inventory</a>
         </div>
     </div>
 </div>

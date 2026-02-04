@@ -79,7 +79,7 @@ class QuoteItem(db.Model):
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'))
-    description = db.Column(db.String(200))
+    description = db.Column(db.String(200)) # Kept for backward compatibility / summary
     status = db.Column(db.String(20), default='Pending') # Pending, In Production, Finished, Delivered, Cancelled
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
     date_due = db.Column(db.DateTime)
@@ -87,6 +87,14 @@ class Order(db.Model):
     payment_status = db.Column(db.String(20), default='Pending') # Pending, Paid, Deposit
 
     materials = db.relationship('OrderMaterial', backref='order', lazy='dynamic', cascade='all, delete-orphan')
+    items = db.relationship('OrderItem', backref='order', lazy='dynamic', cascade='all, delete-orphan')
+
+class OrderItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'))
+    description = db.Column(db.String(200))
+    quantity = db.Column(db.Integer, default=1)
+    unit_price = db.Column(db.Float, default=0.0)
 
 class OrderMaterial(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -94,3 +102,36 @@ class OrderMaterial(db.Model):
     material_id = db.Column(db.Integer, db.ForeignKey('material.id'))
     quantity_estimated = db.Column(db.Float, default=0.0)
     quantity_real = db.Column(db.Float, default=0.0)
+
+class AppSetting(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(50), unique=True, index=True)
+    value = db.Column(db.String(200))
+
+    @staticmethod
+    def get(key, default=None):
+        setting = AppSetting.query.filter_by(key=key).first()
+        return setting.value if setting else default
+
+    @staticmethod
+    def set(key, value):
+        setting = AppSetting.query.filter_by(key=key).first()
+        if not setting:
+            setting = AppSetting(key=key, value=str(value))
+            db.session.add(setting)
+        else:
+            setting.value = str(value)
+        db.session.commit()
+
+class Machine(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    hourly_cost = db.Column(db.Float, default=0.0)
+    power_consumption_watts = db.Column(db.Float, default=0.0)
+    status = db.Column(db.String(20), default='Active') # Active, Maintenance, Retired
+
+class Supplier(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    contact_info = db.Column(db.String(200)) # Email, phone, etc.
+    notes = db.Column(db.Text)

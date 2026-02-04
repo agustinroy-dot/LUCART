@@ -1,38 +1,39 @@
 {% extends "base.html" %}
-
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-    <h3>Quotes</h3>
-    <a href="{{ url_for('quotes.new_quote') }}"><button>New Quote</button></a>
+<div class="header">
+    <h1 class="page-title">Quotes</h1>
+    <div class="actions">
+        <a href="{{ url_for('quotes.new_quote') }}" class="btn btn-primary">+ New Quote</a>
+    </div>
 </div>
 
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Date</th>
-            <th>Customer</th>
-            <th>Total</th>
-            <th>Status</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for q in quotes %}
-        <tr>
-            <td>Q-{{ q.id }}</td>
-            <td>{{ q.date.strftime('%Y-%m-%d') }}</td>
-            <td>{{ q.customer.name }}</td>
-            <td>${{ q.total }}</td>
-            <td>{{ q.status }}</td>
-            <td>
-                <a href="{{ url_for('quotes.view_quote', id=q.id) }}"><button>View</button></a>
-                {% if q.status == 'Accepted' %}
-                <a href="{{ url_for('quotes.convert_to_order', id=q.id) }}" onclick="return confirm('Convert to Order?');"><button>Convert</button></a>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Total</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for quote in quotes %}
+            <tr>
+                <td>#{{ quote.id }}</td>
+                <td>{{ quote.customer.name }}</td>
+                <td><span class="badge badge-{{ 'success' if quote.status=='Accepted' else 'neutral' }}">{{ quote.status }}</span></td>
+                <td>{{ quote.date.strftime('%Y-%m-%d') }}</td>
+                <td>${{ "%.2f"|format(quote.total) }}</td>
+                <td>
+                    <a href="{{ url_for('quotes.view_quote', id=quote.id) }}" class="btn btn-sm btn-secondary">View</a>
+                    <a href="{{ url_for('quotes.print_quote', id=quote.id) }}" target="_blank" class="btn btn-sm btn-secondary">Print</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}
