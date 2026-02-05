@@ -5,11 +5,13 @@ from app.quotes import quotes_bp
 from app.quotes.forms import QuoteForm, QuoteItemForm, CalculatorForm
 from app.models import Quote, QuoteItem, Customer, Order, OrderItem, Machine, Material, AppSetting
 from datetime import datetime
+from sqlalchemy.orm import joinedload
 
 @quotes_bp.route('/')
 @login_required
 def index():
-    quotes = Quote.query.order_by(Quote.date.desc()).all()
+    # Optimizing: Eager load Customer to prevent N+1 queries
+    quotes = Quote.query.options(joinedload(Quote.customer)).order_by(Quote.date.desc()).all()
     return render_template('quotes/index.html', title='Quotes', quotes=quotes)
 
 @quotes_bp.route('/new', methods=['GET', 'POST'])
