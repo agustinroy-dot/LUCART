@@ -1,0 +1,3 @@
+## 2024-05-22 - Dynamic Relationships vs Eager Loading
+**Learning:** SQLAlchemy `lazy='dynamic'` relationships return a Query object, making them incompatible with `joinedload` or `subqueryload` options on the parent query. To optimize N+1 issues in these relationships, the loading strategy must be changed to `lazy='select'` (default) or `lazy=True`, which returns a list/collection.
+**Action:** When identifying N+1 issues on relationships, first check if `lazy='dynamic'` is set in the model. If so, changing it is a prerequisite for optimization, but verify that no code relies on the relationship returning a Query object (e.g. `.filter()`, `.count()`).
