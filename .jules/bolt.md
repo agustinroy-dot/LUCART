@@ -1,0 +1,3 @@
+## 2025-02-18 - [Fixing Broken Tests to Verify Optimization]
+**Learning:** Sometimes the existing test suite is broken due to unrelated issues (e.g., template syntax errors). To verify performance improvements with regression tests, one must first ensure the baseline is functional. Also, `lazy='dynamic'` on a collection relationship implies `select` loading on the scalar backref, which causes N+1 queries if not eager loaded.
+**Action:** Always run the full test suite before starting work to identify existing failures. If failures exist, fix them if they block verification, or isolate the testing to relevant parts. Use `joinedload` on the query side to optimize `lazy='dynamic'` backrefs.
