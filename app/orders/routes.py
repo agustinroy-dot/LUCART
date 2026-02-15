@@ -40,7 +40,11 @@ def new_order():
 @orders_bp.route('/<int:id>', methods=['GET', 'POST'])
 @login_required
 def view_order(id):
-    order = Order.query.get_or_404(id)
+    order = Order.query.options(
+        joinedload(Order.customer),
+        joinedload(Order.items),
+        joinedload(Order.materials).joinedload(OrderMaterial.material)
+    ).filter_by(id=id).first_or_404()
     mat_form = OrderMaterialForm()
     mat_form.material_id.choices = [(m.id, f"{m.name} ({m.unit})") for m in Material.query.order_by('name').all()]
 
