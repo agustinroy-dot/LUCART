@@ -1,0 +1,3 @@
+## 2026-02-04 - Optimizing Dynamic Relationships
+**Learning:** `lazy='dynamic'` relationships return a Query object, which prevents standard eager loading optimizations (`joinedload`, `subqueryload`) from working effectively (they are ignored or overridden by the dynamic query). To optimize N+1 queries on such relationships, you often need to change them to standard list-based relationships (removing `lazy='dynamic'`) and update call sites (e.g., replace `.count()` with `len()` or `|length`).
+**Action:** When identifying N+1 issues on `lazy='dynamic'` relationships, verify all call sites (templates and code) before removing `lazy='dynamic'`, as methods like `.filter()` and `.count()` will no longer be available on the relationship attribute.
