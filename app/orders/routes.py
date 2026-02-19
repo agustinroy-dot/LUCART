@@ -3,7 +3,7 @@ from flask_login import login_required
 from app import db
 from app.orders import orders_bp
 from app.orders.forms import OrderForm, OrderMaterialForm, ConfirmMaterialForm
-from app.models import Order, OrderMaterial, Customer, Material, InventoryLog, Transaction
+from app.models import Order, OrderMaterial, Customer, Material, InventoryLog, Transaction, OrderItem
 from datetime import datetime
 from sqlalchemy.orm import joinedload
 
@@ -40,7 +40,13 @@ def new_order():
 @orders_bp.route('/<int:id>', methods=['GET', 'POST'])
 @login_required
 def view_order(id):
-    order = Order.query.get_or_404(id)
+    # Eager load customer to prevent N+1
+    order = Order.query.options(joinedload(Order.customer)).get_or_404(id)
+
+    # Fetch items and materials (with eager loading) separately to prevent N+1 on dynamic relationships
+    order_items = OrderItem.query.filter_by(order_id=id).all()
+    order_materials = OrderMaterial.query.filter_by(order_id=id).options(joinedload(OrderMaterial.material)).all()
+
     mat_form = OrderMaterialForm()
     mat_form.material_id.choices = [(m.id, f"{m.name} ({m.unit})") for m in Material.query.order_by('name').all()]
 
@@ -61,7 +67,7 @@ def view_order(id):
             flash('Material usage estimate added.', 'success')
             return redirect(url_for('orders.view_order', id=order.id))
 
-    return render_template('orders/view.html', order=order, mat_form=mat_form)
+    return render_template('orders/view.html', order=order, mat_form=mat_form, order_items=order_items, order_materials=order_materials)
 
 @orders_bp.route('/<int:id>/edit', methods=['GET', 'POST'])
 @login_required
