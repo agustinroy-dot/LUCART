@@ -10,9 +10,8 @@ from datetime import datetime
 @login_required
 def index():
     materials = Material.query.all()
-    # Highlight low stock
-    low_stock = [m for m in materials if m.quantity <= m.min_stock]
-    return render_template('inventory/index.html', title='Inventory', materials=materials, low_stock=low_stock)
+    # Low stock highlighting is handled in the template
+    return render_template('inventory/index.html', title='Inventory', materials=materials)
 
 @inventory_bp.route('/new', methods=['GET', 'POST'])
 @login_required
