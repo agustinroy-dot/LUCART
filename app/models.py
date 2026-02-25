@@ -1,6 +1,7 @@
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+from flask import g, has_app_context
 from app.extensions import db, login
 
 @login.user_loader
@@ -110,18 +111,31 @@ class AppSetting(db.Model):
 
     @staticmethod
     def get(key, default=None):
+        # Optimization: Use request-level caching to prevent N+1 queries
+        if has_app_context():
+            if not hasattr(g, 'app_settings_cache'):
+                # Fetch all settings in a single query
+                all_settings = AppSetting.query.all()
+                g.app_settings_cache = {s.key: s.value for s in all_settings}
+            return g.app_settings_cache.get(key, default)
+
         setting = AppSetting.query.filter_by(key=key).first()
         return setting.value if setting else default
 
     @staticmethod
     def set(key, value):
         setting = AppSetting.query.filter_by(key=key).first()
+        val_str = str(value)
         if not setting:
-            setting = AppSetting(key=key, value=str(value))
+            setting = AppSetting(key=key, value=val_str)
             db.session.add(setting)
         else:
-            setting.value = str(value)
+            setting.value = val_str
         db.session.commit()
+
+        # Update cache if it exists to maintain consistency
+        if has_app_context() and hasattr(g, 'app_settings_cache'):
+            g.app_settings_cache[key] = val_str
 
 class Machine(db.Model):
     id = db.Column(db.Integer, primary_key=True)
