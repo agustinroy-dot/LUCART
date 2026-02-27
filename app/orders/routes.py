@@ -40,7 +40,16 @@ def new_order():
 @orders_bp.route('/<int:id>', methods=['GET', 'POST'])
 @login_required
 def view_order(id):
-    order = Order.query.get_or_404(id)
+    # Eager load customer for the main view
+    order = Order.query.options(joinedload(Order.customer)).get_or_404(id)
+
+    # Explicitly fetch related data to avoid N+1 queries in template
+    # Order.items is lazy='dynamic', so we fetch all() to get the list
+    order_items = order.items.all()
+
+    # Order.materials is lazy='dynamic', so we use options() to eager load the related Material
+    order_materials = order.materials.options(joinedload(OrderMaterial.material)).all()
+
     mat_form = OrderMaterialForm()
     mat_form.material_id.choices = [(m.id, f"{m.name} ({m.unit})") for m in Material.query.order_by('name').all()]
 
@@ -61,7 +70,7 @@ def view_order(id):
             flash('Material usage estimate added.', 'success')
             return redirect(url_for('orders.view_order', id=order.id))
 
-    return render_template('orders/view.html', order=order, mat_form=mat_form)
+    return render_template('orders/view.html', order=order, order_items=order_items, order_materials=order_materials, mat_form=mat_form)
 
 @orders_bp.route('/<int:id>/edit', methods=['GET', 'POST'])
 @login_required
