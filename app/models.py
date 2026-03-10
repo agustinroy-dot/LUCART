@@ -103,13 +103,25 @@ class OrderMaterial(db.Model):
     quantity_estimated = db.Column(db.Float, default=0.0)
     quantity_real = db.Column(db.Float, default=0.0)
 
+from flask import current_app, has_app_context, g
+
 class AppSetting(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     key = db.Column(db.String(50), unique=True, index=True)
     value = db.Column(db.String(200))
 
     @staticmethod
+    def _load_all_to_g():
+        if not hasattr(g, 'app_settings_cache'):
+            settings = AppSetting.query.all()
+            g.app_settings_cache = {s.key: s.value for s in settings}
+
+    @staticmethod
     def get(key, default=None):
+        if has_app_context():
+            AppSetting._load_all_to_g()
+            return g.app_settings_cache.get(key, default)
+
         setting = AppSetting.query.filter_by(key=key).first()
         return setting.value if setting else default
 
@@ -122,6 +134,10 @@ class AppSetting(db.Model):
         else:
             setting.value = str(value)
         db.session.commit()
+
+        # Invalidate cache if it exists
+        if has_app_context() and hasattr(g, 'app_settings_cache'):
+            g.app_settings_cache[key] = str(value)
 
 class Machine(db.Model):
     id = db.Column(db.Integer, primary_key=True)
