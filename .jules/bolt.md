@@ -1,0 +1,3 @@
+## 2024-05-24 - [Optimize AppSetting queries with flask.g cache]
+**Learning:** The `AppSetting` model performed a database query on every `.get()` call, leading to a significant N+1 problem on pages loading multiple settings (like quote creation or settings page).
+**Action:** Implemented request-level caching using `flask.g`. If an application context is present, all settings are loaded with a single query into `g.app_settings_cache`. Subsequent `.get()` calls read from the cache. Benchmark testing showed a reduction from ~0.20s down to ~0.002s. Cache invalidation was also added to the `.set()` method to ensure consistency within the same request.
