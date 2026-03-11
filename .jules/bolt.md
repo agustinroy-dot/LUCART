@@ -1,0 +1,3 @@
+## 2024-05-20 - N+1 Queries in Flask/Jinja Templates
+**Learning:** Rendering attributes of SQLAlchemy relationships (like `quote.customer.name`) in a Jinja loop (`{% for quote in quotes %}`) will trigger an N+1 query problem if the relationship is lazy-loaded by default. This is a common performance bottleneck in list/index views across this Flask application.
+**Action:** Always inspect the template logic for index views and explicitly use `.options(joinedload(Model.relationship))` in the route's SQLAlchemy query for any relationships accessed within the template loop to eager-load the data and reduce database queries.
