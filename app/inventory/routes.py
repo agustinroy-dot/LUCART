@@ -10,9 +10,12 @@ from datetime import datetime
 @login_required
 def index():
     materials = Material.query.all()
-    # Highlight low stock
-    low_stock = [m for m in materials if m.quantity <= m.min_stock]
-    return render_template('inventory/index.html', title='Inventory', materials=materials, low_stock=low_stock)
+    # ⚡ Bolt Optimization:
+    # Removed O(N) Python-side list comprehension:
+    # low_stock = [m for m in materials if m.quantity <= m.min_stock]
+    # The template handles low stock styling inline and did not use this variable.
+    # Impact: Reduces memory usage and CPU cycles per request, improving response time.
+    return render_template('inventory/index.html', title='Inventory', materials=materials)
 
 @inventory_bp.route('/new', methods=['GET', 'POST'])
 @login_required
