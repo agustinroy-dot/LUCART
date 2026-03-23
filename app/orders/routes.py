@@ -40,7 +40,13 @@ def new_order():
 @orders_bp.route('/<int:id>', methods=['GET', 'POST'])
 @login_required
 def view_order(id):
-    order = Order.query.get_or_404(id)
+    # ⚡ Bolt Optimization: Fix N+1 queries by eager-loading related data.
+    # Impact: Reduces database queries from 1+N (where N is materials + items) to 1 query.
+    order = Order.query.options(
+        joinedload(Order.customer),
+        joinedload(Order.items),
+        joinedload(Order.materials).joinedload(OrderMaterial.material)
+    ).filter_by(id=id).first_or_404()
     mat_form = OrderMaterialForm()
     mat_form.material_id.choices = [(m.id, f"{m.name} ({m.unit})") for m in Material.query.order_by('name').all()]
 
