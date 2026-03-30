@@ -42,45 +42,61 @@ def index():
 @settings_bp.route('/export/<type>')
 @login_required
 def export_data(type):
-    si = io.StringIO()
-    cw = csv.writer(si)
-
-    if type == 'customers':
-        cw.writerow(['ID', 'Name', 'Email', 'Phone', 'Address', 'Notes'])
-        records = Customer.query.all()
-        for r in records:
-            cw.writerow([r.id, r.name, r.email, r.phone, r.address, r.notes])
-        filename = 'customers.csv'
-
-    elif type == 'orders':
-        cw.writerow(['ID', 'Customer', 'Description', 'Price', 'Status', 'Date Created', 'Date Due'])
-        records = Order.query.options(joinedload(Order.customer)).all()
-        for r in records:
-            cw.writerow([r.id, r.customer.name if r.customer else 'N/A', r.description, r.price, r.status, r.date_created, r.date_due])
-        filename = 'orders.csv'
-
-    elif type == 'finance':
-        cw.writerow(['ID', 'Date', 'Type', 'Category', 'Amount', 'Description', 'Is Business'])
-        records = Transaction.query.all()
-        for r in records:
-            cw.writerow([r.id, r.date, r.type, r.category, r.amount, r.description, r.is_business])
-        filename = 'transactions.csv'
-
-    elif type == 'inventory':
-        cw.writerow(['ID', 'Name', 'Type', 'Quantity', 'Unit', 'Cost'])
-        records = Material.query.all()
-        for r in records:
-            cw.writerow([r.id, r.name, r.type, r.quantity, r.unit, r.cost])
-        filename = 'inventory.csv'
-
-    else:
+    if type not in ['customers', 'orders', 'finance', 'inventory']:
         flash('Invalid export type.', 'error')
         return redirect(url_for('settings.index'))
 
-    output = si.getvalue()
+    def generate():
+        si = io.StringIO()
+        cw = csv.writer(si)
+
+        if type == 'customers':
+            cw.writerow(['ID', 'Name', 'Email', 'Phone', 'Address', 'Notes'])
+            yield si.getvalue()
+            si.seek(0); si.truncate(0)
+
+            for r in Customer.query.yield_per(100):
+                cw.writerow([r.id, r.name, r.email, r.phone, r.address, r.notes])
+                yield si.getvalue()
+                si.seek(0); si.truncate(0)
+
+        elif type == 'orders':
+            cw.writerow(['ID', 'Customer', 'Description', 'Price', 'Status', 'Date Created', 'Date Due'])
+            yield si.getvalue()
+            si.seek(0); si.truncate(0)
+
+            # Use joinedload for the many-to-one customer relationship to avoid N+1 queries during export
+            for r in Order.query.options(joinedload(Order.customer)).yield_per(100):
+                cw.writerow([r.id, r.customer.name if r.customer else 'N/A', r.description, r.price, r.status, r.date_created, r.date_due])
+                yield si.getvalue()
+                si.seek(0); si.truncate(0)
+
+        elif type == 'finance':
+            cw.writerow(['ID', 'Date', 'Type', 'Category', 'Amount', 'Description', 'Is Business'])
+            yield si.getvalue()
+            si.seek(0); si.truncate(0)
+
+            for r in Transaction.query.yield_per(100):
+                cw.writerow([r.id, r.date, r.type, r.category, r.amount, r.description, r.is_business])
+                yield si.getvalue()
+                si.seek(0); si.truncate(0)
+
+        elif type == 'inventory':
+            cw.writerow(['ID', 'Name', 'Type', 'Quantity', 'Unit', 'Cost'])
+            yield si.getvalue()
+            si.seek(0); si.truncate(0)
+
+            for r in Material.query.yield_per(100):
+                cw.writerow([r.id, r.name, r.type, r.quantity, r.unit, r.cost])
+                yield si.getvalue()
+                si.seek(0); si.truncate(0)
+
+    filename = f"{type}.csv"
+    if type == 'finance':
+        filename = 'transactions.csv'
+
     return Response(
-        output,
+        generate(),
         mimetype="text/csv",
-        headers={"Content-disposition":
-                 f"attachment; filename={filename}"}
+        headers={"Content-disposition": f"attachment; filename={filename}"}
     )
