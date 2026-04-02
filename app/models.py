@@ -103,13 +103,33 @@ class OrderMaterial(db.Model):
     quantity_estimated = db.Column(db.Float, default=0.0)
     quantity_real = db.Column(db.Float, default=0.0)
 
+from flask import g, has_app_context
+
 class AppSetting(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     key = db.Column(db.String(50), unique=True, index=True)
     value = db.Column(db.String(200))
 
     @staticmethod
+    def get_all():
+        if has_app_context():
+            if 'app_settings_cache' not in g:
+                settings = AppSetting.query.all()
+                g.app_settings_cache = {s.key: s.value for s in settings}
+            return g.app_settings_cache
+        else:
+            settings = AppSetting.query.all()
+            return {s.key: s.value for s in settings}
+
+    @staticmethod
     def get(key, default=None):
+        if has_app_context():
+            # Transparently warm the cache if it hasn't been initialized yet
+            if 'app_settings_cache' not in g:
+                AppSetting.get_all()
+            if 'app_settings_cache' in g:
+                return g.app_settings_cache.get(key, default)
+
         setting = AppSetting.query.filter_by(key=key).first()
         return setting.value if setting else default
 
@@ -122,6 +142,13 @@ class AppSetting(db.Model):
         else:
             setting.value = str(value)
         db.session.commit()
+
+        if has_app_context():
+            # If the cache hasn't been initialized yet, fetching all settings
+            # will correctly warm it so we don't end up with a cache missing other values.
+            if 'app_settings_cache' not in g:
+                AppSetting.get_all()
+            g.app_settings_cache[key] = str(value)
 
 class Machine(db.Model):
     id = db.Column(db.Integer, primary_key=True)
