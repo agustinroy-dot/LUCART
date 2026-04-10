@@ -5,7 +5,7 @@ from app.orders import orders_bp
 from app.orders.forms import OrderForm, OrderMaterialForm, ConfirmMaterialForm
 from app.models import Order, OrderMaterial, Customer, Material, InventoryLog, Transaction
 from datetime import datetime
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 @orders_bp.route('/')
 @login_required
@@ -40,7 +40,11 @@ def new_order():
 @orders_bp.route('/<int:id>', methods=['GET', 'POST'])
 @login_required
 def view_order(id):
-    order = Order.query.get_or_404(id)
+    order = Order.query.options(
+        joinedload(Order.customer),
+        selectinload(Order.items),
+        selectinload(Order.materials).joinedload(OrderMaterial.material)
+    ).get_or_404(id)
     mat_form = OrderMaterialForm()
     mat_form.material_id.choices = [(m.id, f"{m.name} ({m.unit})") for m in Material.query.order_by('name').all()]
 
