@@ -61,7 +61,9 @@ def view_order(id):
             flash('Material usage estimate added.', 'success')
             return redirect(url_for('orders.view_order', id=order.id))
 
-    return render_template('orders/view.html', order=order, mat_form=mat_form)
+    # Optimizing N+1 query: Eagerly load materials
+    materials = OrderMaterial.query.filter_by(order_id=order.id).options(joinedload(OrderMaterial.material)).all()
+    return render_template('orders/view.html', order=order, mat_form=mat_form, materials=materials)
 
 @orders_bp.route('/<int:id>/edit', methods=['GET', 'POST'])
 @login_required
