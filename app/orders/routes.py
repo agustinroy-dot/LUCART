@@ -40,7 +40,7 @@ def new_order():
 @orders_bp.route('/<int:id>', methods=['GET', 'POST'])
 @login_required
 def view_order(id):
-    order = Order.query.get_or_404(id)
+    order = Order.query.options(joinedload(Order.customer), joinedload(Order.items), joinedload(Order.materials).joinedload(OrderMaterial.material)).get_or_404(id)
     mat_form = OrderMaterialForm()
     mat_form.material_id.choices = [(m.id, f"{m.name} ({m.unit})") for m in Material.query.order_by('name').all()]
 
@@ -66,7 +66,7 @@ def view_order(id):
 @orders_bp.route('/<int:id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_order(id):
-    order = Order.query.get_or_404(id)
+    order = Order.query.options(joinedload(Order.customer), joinedload(Order.items), joinedload(Order.materials).joinedload(OrderMaterial.material)).get_or_404(id)
     form = OrderForm(obj=order)
     form.customer_id.choices = [(c.id, c.name) for c in Customer.query.order_by('name').all()]
 
@@ -128,7 +128,7 @@ def confirm_material_usage(id):
 @orders_bp.route('/<int:id>/pay')
 @login_required
 def mark_paid(id):
-    order = Order.query.get_or_404(id)
+    order = Order.query.options(joinedload(Order.customer), joinedload(Order.items), joinedload(Order.materials).joinedload(OrderMaterial.material)).get_or_404(id)
 
     # Idempotency Check
     if order.payment_status == 'Paid':
