@@ -33,7 +33,7 @@
 
 <div class="card mt-20">
     <h3>Order Items</h3>
-    {% if order.items.count() > 0 %}
+    {% if order.items|length > 0 %}
     <table>
         <thead>
             <tr>
@@ -122,6 +122,8 @@
                 {{ mat_form.submit(class="btn btn-sm btn-secondary") }}
             </div>
         </form>
+        </fieldset>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
