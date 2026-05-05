@@ -40,7 +40,7 @@ def new_quote():
 @quotes_bp.route('/<int:id>', methods=['GET', 'POST'])
 @login_required
 def view_quote(id):
-    quote = Quote.query.get_or_404(id)
+    quote = Quote.query.options(joinedload(Quote.items)).get_or_404(id)
     item_form = QuoteItemForm()
 
     if item_form.validate_on_submit():
@@ -60,7 +60,7 @@ def view_quote(id):
 @quotes_bp.route('/<int:id>/calculator', methods=['GET', 'POST'])
 @login_required
 def calculator(id):
-    quote = Quote.query.get_or_404(id)
+    quote = Quote.query.options(joinedload(Quote.items)).get_or_404(id)
     form = CalculatorForm()
 
     # Populate choices
@@ -142,7 +142,7 @@ def delete_item(id):
 @quotes_bp.route('/<int:id>/status/<status>')
 @login_required
 def set_status(id, status):
-    quote = Quote.query.get_or_404(id)
+    quote = Quote.query.options(joinedload(Quote.items)).get_or_404(id)
     if status in ['Sent', 'Accepted', 'Rejected']:
         quote.status = status
         db.session.commit()
@@ -151,13 +151,13 @@ def set_status(id, status):
 @quotes_bp.route('/<int:id>/print')
 @login_required
 def print_quote(id):
-    quote = Quote.query.get_or_404(id)
+    quote = Quote.query.options(joinedload(Quote.items)).get_or_404(id)
     return render_template('quotes/print.html', quote=quote)
 
 @quotes_bp.route('/<int:id>/convert')
 @login_required
 def convert_to_order(id):
-    quote = Quote.query.get_or_404(id)
+    quote = Quote.query.options(joinedload(Quote.items)).get_or_404(id)
     if quote.status != 'Accepted':
         flash('Quote must be marked as Accepted before converting.', 'warning')
         return redirect(url_for('quotes.view_quote', id=id))
