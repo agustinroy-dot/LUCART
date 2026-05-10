@@ -1,6 +1,7 @@
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+from flask import g, has_app_context
 from app.extensions import db, login
 
 @login.user_loader
@@ -109,12 +110,41 @@ class AppSetting(db.Model):
     value = db.Column(db.String(200))
 
     @staticmethod
+    def get_all():
+        """
+        ⚡ Bolt Performance Optimization:
+        Instead of running a separate database query for each setting read
+        (which causes N+1 query problems in forms or quotes logic where multiple
+        settings like 'electricity_rate' and 'labor_rate' are fetched sequentially),
+        we batch-load all AppSetting values into memory per-request using `flask.g`.
+
+        Impact: Reduces multiple database SELECT queries to 1 per request lifecycle.
+        """
+        if has_app_context():
+            if 'app_settings_cache' not in g:
+                settings = AppSetting.query.all()
+                g.app_settings_cache = {s.key: s.value for s in settings}
+            return g.app_settings_cache
+        return None
+
+    @staticmethod
     def get(key, default=None):
+        # ⚡ Warm the cache and retrieve the value from memory if possible
+        cache = AppSetting.get_all()
+        if cache is not None:
+            return cache.get(key, default)
+
         setting = AppSetting.query.filter_by(key=key).first()
         return setting.value if setting else default
 
     @staticmethod
     def set(key, value):
+        # ⚡ Ensure the cache is warmed *before* setting a value,
+        # to prevent creating an incomplete cache containing only this key.
+        cache = AppSetting.get_all()
+        if cache is not None:
+            cache[key] = str(value)
+
         setting = AppSetting.query.filter_by(key=key).first()
         if not setting:
             setting = AppSetting(key=key, value=str(value))
