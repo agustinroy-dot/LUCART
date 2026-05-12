@@ -1,4 +1,3 @@
-
-## 2024-05-18 - [Quotes N+1 Query]
-**Learning:** Found an N+1 query issue in the Quotes index route (`/app/quotes/routes.py`) where the template accessed `quote.customer.name` inside a loop, triggering a separate query for each quote. Fixed by eager-loading with `joinedload(Quote.customer)`.
-**Action:** Always inspect Jinja template loops over database models for relationship accesses and ensure those relationships are eager-loaded in the route's SQL query using `joinedload`.
+## 2024-05-12 - N+1 Queries on `lazy='dynamic'`
+**Learning:** `lazy='dynamic'` relationships return `AppenderQuery` objects. Attempting to `joinedload` a dynamic relationship causes a fatal crash (`InvalidRequestError`) because SQLAlchemy cannot eagerly populate an unexecuted query object.
+**Action:** When eager loading collection relationships via `joinedload`, ensure the relationship's `lazy` parameter is changed to `'select'` (or left as default). Furthermore, any templates calling query methods (like `.count()`) on that relationship must be refactored to handle standard lists (e.g. using `|length`), otherwise the template will crash.
