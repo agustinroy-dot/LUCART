@@ -21,13 +21,13 @@
 
 <div class="dashboard-grid">
     <div class="card">
-        <h3>Customer Info</h3>
+        <h3>Customer</h3>
         <p><strong>{{ quote.customer.name }}</strong></p>
         <p>{{ quote.customer.email }}</p>
         <p>{{ quote.customer.phone }}</p>
     </div>
     <div class="card">
-        <h3>Quote Details</h3>
+        <h3>Details</h3>
         <p><strong>Date:</strong> {{ quote.date.strftime('%Y-%m-%d') }}</p>
         <p><strong>Total:</strong> ${{ "%.2f"|format(quote.total) }}</p>
     </div>
@@ -35,20 +35,21 @@
 
 <div class="card mt-20">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h3>Line Items</h3>
-        <div class="btn-group">
+        <h3>Quote Items</h3>
+        {% if quote.status in ['Draft', 'Sent'] %}
             <a href="{{ url_for('quotes.calculator', id=quote.id) }}" class="btn btn-sm btn-primary">Use Auto-Calculator</a>
-        </div>
+        {% endif %}
     </div>
 
+    {% if quote.items|length > 0 %}
     <table>
         <thead>
             <tr>
                 <th>Description</th>
                 <th>Qty</th>
                 <th>Unit Price</th>
-                <th>Line Total</th>
-                <th>Action</th>
+                <th>Total</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -58,26 +59,48 @@
                 <td>{{ item.quantity }}</td>
                 <td>${{ "%.2f"|format(item.unit_price) }}</td>
                 <td>${{ "%.2f"|format(item.quantity * item.unit_price) }}</td>
-                <td><a href="{{ url_for('quotes.delete_item', id=item.id) }}" style="color: var(--error-color);">Remove</a></td>
+                <td>
+                    {% if quote.status in ['Draft', 'Sent'] %}
+                        <a href="{{ url_for('quotes.delete_item', id=item.id) }}" class="btn btn-sm btn-danger">Delete</a>
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
-            <!-- Manual Add Form -->
-            <tr>
-                <form method="post">
-                    {{ item_form.hidden_tag() }}
-                    <td>{{ item_form.description(placeholder="Description") }}</td>
-                    <td width="80">{{ item_form.quantity(placeholder="Qty") }}</td>
-                    <td width="100">{{ item_form.unit_price(placeholder="Price") }}</td>
-                    <td></td>
-                    <td>{{ item_form.submit(class="btn btn-sm btn-primary") }}</td>
-                </form>
-            </tr>
         </tbody>
     </table>
+    {% else %}
+    <p>No line items added yet.</p>
+    {% endif %}
+
+    {% if quote.status in ['Draft', 'Sent'] %}
+    <fieldset style="margin-top: 20px; border: 1px solid #999; padding: 10px;">
+        <legend>Add Manual Item</legend>
+        <form method="post" style="display: flex; gap: 10px; align-items: flex-end;">
+            {{ item_form.hidden_tag() }}
+            <div class="form-group" style="flex: 1;">
+                {{ item_form.description.label }}<br>
+                {{ item_form.description(class="form-control", style="width: 100%") }}
+            </div>
+            <div class="form-group">
+                {{ item_form.quantity.label }}<br>
+                {{ item_form.quantity(class="form-control", style="width: 80px") }}
+            </div>
+            <div class="form-group">
+                {{ item_form.unit_price.label }}<br>
+                {{ item_form.unit_price(class="form-control", style="width: 100px") }}
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                {{ item_form.submit(class="btn btn-secondary") }}
+            </div>
+        </form>
+    </fieldset>
+    {% endif %}
 </div>
 
+{% if quote.notes %}
 <div class="card mt-20">
     <h3>Notes</h3>
     <p>{{ quote.notes }}</p>
 </div>
+{% endif %}
 {% endblock %}
