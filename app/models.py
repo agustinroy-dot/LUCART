@@ -27,8 +27,8 @@ class Customer(db.Model):
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    orders = db.relationship('Order', backref='customer', lazy='dynamic')
-    quotes = db.relationship('Quote', backref='customer', lazy='dynamic')
+    orders = db.relationship('Order', backref='customer', lazy='select')
+    quotes = db.relationship('Quote', backref='customer', lazy='select')
 
 class Material(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -39,8 +39,8 @@ class Material(db.Model):
     cost = db.Column(db.Float, default=0.0) # Cost per unit
     min_stock = db.Column(db.Float, default=0.0)
 
-    logs = db.relationship('InventoryLog', backref='material', lazy='dynamic')
-    order_usages = db.relationship('OrderMaterial', backref='material', lazy='dynamic')
+    logs = db.relationship('InventoryLog', backref='material', lazy='select')
+    order_usages = db.relationship('OrderMaterial', backref='material', lazy='select')
 
 class InventoryLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -67,7 +67,7 @@ class Quote(db.Model):
     total = db.Column(db.Float, default=0.0)
     notes = db.Column(db.Text)
 
-    items = db.relationship('QuoteItem', backref='quote', lazy='dynamic', cascade='all, delete-orphan')
+    items = db.relationship('QuoteItem', backref='quote', lazy='select', cascade='all, delete-orphan')
 
 class QuoteItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -86,8 +86,8 @@ class Order(db.Model):
     price = db.Column(db.Float, default=0.0)
     payment_status = db.Column(db.String(20), default='Pending') # Pending, Paid, Deposit
 
-    materials = db.relationship('OrderMaterial', backref='order', lazy='dynamic', cascade='all, delete-orphan')
-    items = db.relationship('OrderItem', backref='order', lazy='dynamic', cascade='all, delete-orphan')
+    materials = db.relationship('OrderMaterial', backref='order', lazy='select', cascade='all, delete-orphan')
+    items = db.relationship('OrderItem', backref='order', lazy='select', cascade='all, delete-orphan')
 
 class OrderItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
