@@ -108,20 +108,43 @@ class AppSetting(db.Model):
     key = db.Column(db.String(50), unique=True, index=True)
     value = db.Column(db.String(200))
 
-    @staticmethod
-    def get(key, default=None):
-        setting = AppSetting.query.filter_by(key=key).first()
+    @classmethod
+    def get_all(cls):
+        from flask import g, has_app_context
+        if has_app_context():
+            if not hasattr(g, 'app_settings_cache'):
+                settings = cls.query.all()
+                g.app_settings_cache = {s.key: s.value for s in settings}
+            return g.app_settings_cache
+        return None
+
+    @classmethod
+    def get(cls, key, default=None):
+        from flask import has_app_context
+        if has_app_context():
+            cache = cls.get_all()
+            if cache is not None:
+                return cache.get(key, default)
+
+        setting = cls.query.filter_by(key=key).first()
         return setting.value if setting else default
 
-    @staticmethod
-    def set(key, value):
-        setting = AppSetting.query.filter_by(key=key).first()
+    @classmethod
+    def set(cls, key, value):
+        from flask import g, has_app_context
+        setting = cls.query.filter_by(key=key).first()
         if not setting:
-            setting = AppSetting(key=key, value=str(value))
+            setting = cls(key=key, value=str(value))
             db.session.add(setting)
         else:
             setting.value = str(value)
         db.session.commit()
+
+        if has_app_context():
+            if hasattr(g, 'app_settings_cache'):
+                g.app_settings_cache[key] = str(value)
+            else:
+                cls.get_all()
 
 class Machine(db.Model):
     id = db.Column(db.Integer, primary_key=True)
