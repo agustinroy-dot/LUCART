@@ -67,6 +67,9 @@ def calculator(id):
     form.machine_id.choices = [(m.id, m.name) for m in Machine.query.all()]
     form.material_id.choices = [(m.id, f"{m.name} ({m.cost}/{m.unit})") for m in Material.query.all()]
 
+    # Pre-warm the settings cache for this request
+    AppSetting.get_all()
+
     # Set defaults from settings
     if request.method == 'GET':
         form.margin.data = float(AppSetting.get('default_margin', 0.30))
