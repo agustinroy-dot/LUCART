@@ -40,7 +40,10 @@ def new_quote():
 @quotes_bp.route('/<int:id>', methods=['GET', 'POST'])
 @login_required
 def view_quote(id):
-    quote = Quote.query.get_or_404(id)
+    quote = Quote.query.options(
+        joinedload(Quote.customer),
+        joinedload(Quote.items)
+    ).get_or_404(id)
     item_form = QuoteItemForm()
 
     if item_form.validate_on_submit():
@@ -151,7 +154,10 @@ def set_status(id, status):
 @quotes_bp.route('/<int:id>/print')
 @login_required
 def print_quote(id):
-    quote = Quote.query.get_or_404(id)
+    quote = Quote.query.options(
+        joinedload(Quote.customer),
+        joinedload(Quote.items)
+    ).get_or_404(id)
     return render_template('quotes/print.html', quote=quote)
 
 @quotes_bp.route('/<int:id>/convert')
