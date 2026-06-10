@@ -80,7 +80,8 @@ def calculator(id):
         labor_h = form.labor_time_h.data
         margin = form.margin.data
 
-        # Get Rates
+        # Get Rates (cache pre-warmed for this request)
+        AppSetting.get_all()
         elec_rate = float(AppSetting.get('electricity_rate', 0.25))
         labor_rate = float(AppSetting.get('labor_rate', 20.0))
         consumables = float(AppSetting.get('consumables_cost', 2.0))
