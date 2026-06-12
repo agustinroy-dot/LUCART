@@ -1,4 +1,3 @@
-
-## 2024-05-18 - [Quotes N+1 Query]
-**Learning:** Found an N+1 query issue in the Quotes index route (`/app/quotes/routes.py`) where the template accessed `quote.customer.name` inside a loop, triggering a separate query for each quote. Fixed by eager-loading with `joinedload(Quote.customer)`.
-**Action:** Always inspect Jinja template loops over database models for relationship accesses and ensure those relationships are eager-loaded in the route's SQL query using `joinedload`.
+## 2024-05-24 - Context-Aware Caching in Models
+**Learning:** When using `flask.g` inside SQLAlchemy models for caching, `flask.g` and `has_app_context()` must be explicitly imported, and `flask.g` must only be accessed if `has_app_context()` is true, otherwise it causes `RuntimeError` during tests or CLI executions. Additionally, ensure template files aren't accidentally modified with hallucinated changes during backend tasks.
+**Action:** Always import `g` and `has_app_context` from `flask` explicitly in the model file when implementing caching. Avoid unrelated changes to template files to prevent `TemplateSyntaxError`.
