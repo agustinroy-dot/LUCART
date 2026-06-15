@@ -94,12 +94,7 @@
         </tbody>
     </table>
 
-    <div style="margin-top: 15px;">
-        <form method="post">
-            {{ mat_form.hidden_tag() }}
-            <div style="display: flex; gap: 10px; align-items: end;">
-                <div class="form-group" style="margin-bottom: 0;">
-                    {{ mat_form.material_id(class="form-control") }}
+        <div style="margin-top: 15px;">
         {% if order.status not in ['Finished', 'Delivered', 'Cancelled'] %}
         <fieldset style="margin-top: 20px; border: 1px solid #999; padding: 10px;">
             <legend>Add Material</legend>
@@ -107,21 +102,19 @@
                 {{ mat_form.hidden_tag() }}
                 <div class="form-group">
                     {{ mat_form.material_id.label }}<br>
-                    {{ mat_form.material_id() }}
+                    {{ mat_form.material_id(class="form-control") }}
                     {% for error in mat_form.material_id.errors %}
                         <span style="color: red; font-size: 0.9em;">{{ error }}</span>
                     {% endfor %}
                 </div>
                 <div class="form-group">
                     {{ mat_form.quantity.label }}<br>
-                    {{ mat_form.quantity(style="width: 80px") }}
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    {{ mat_form.quantity(class="form-control", placeholder="Est. Qty") }}
+                    {{ mat_form.quantity(class="form-control", style="width: 80px", placeholder="Est. Qty") }}
                 </div>
                 {{ mat_form.submit(class="btn btn-sm btn-secondary") }}
-            </div>
-        </form>
+            </form>
+        </fieldset>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
