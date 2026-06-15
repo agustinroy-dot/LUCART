@@ -1,6 +1,7 @@
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+from flask import g, has_app_context
 from app.extensions import db, login
 
 @login.user_loader
@@ -109,7 +110,18 @@ class AppSetting(db.Model):
     value = db.Column(db.String(200))
 
     @staticmethod
+    def get_all():
+        if has_app_context():
+            settings = AppSetting.query.all()
+            g.app_settings_cache = {s.key: s.value for s in settings}
+
+    @staticmethod
     def get(key, default=None):
+        if has_app_context():
+            if not hasattr(g, 'app_settings_cache'):
+                AppSetting.get_all()
+            return g.app_settings_cache.get(key, default)
+
         setting = AppSetting.query.filter_by(key=key).first()
         return setting.value if setting else default
 
@@ -122,6 +134,12 @@ class AppSetting(db.Model):
         else:
             setting.value = str(value)
         db.session.commit()
+
+        if has_app_context():
+            if not hasattr(g, 'app_settings_cache'):
+                AppSetting.get_all()
+            else:
+                g.app_settings_cache[key] = str(value)
 
 class Machine(db.Model):
     id = db.Column(db.Integer, primary_key=True)
