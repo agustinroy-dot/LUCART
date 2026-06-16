@@ -1,0 +1,124 @@
+cat << 'INNER_EOF' > app/templates/orders/view.html
+{% extends "base.html" %}
+{% block content %}
+<div class="header">
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <a href="{{ url_for('orders.index') }}" class="btn btn-sm btn-secondary">&larr; Back</a>
+        <h1 class="page-title">Order #{{ order.id }}</h1>
+        <span class="badge badge-{{ 'success' if order.status=='Finished' else 'warning' }}">{{ order.status }}</span>
+    </div>
+    <div class="actions">
+        {% if order.status != 'Finished' %}
+            <a href="{{ url_for('orders.edit_order', id=order.id) }}" class="btn btn-secondary">Edit Order</a>
+        {% endif %}
+        {% if order.payment_status != 'Paid' %}
+            <a href="{{ url_for('orders.mark_paid', id=order.id) }}" class="btn btn-success">Mark Paid</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <div class="card">
+        <h3>Customer</h3>
+        <p><strong>{{ order.customer.name }}</strong></p>
+        <p>{{ order.customer.email }}</p>
+    </div>
+    <div class="card">
+        <h3>Details</h3>
+        <p><strong>Created:</strong> {{ order.date_created.strftime('%Y-%m-%d') }}</p>
+        <p><strong>Due:</strong> {{ order.date_due.strftime('%Y-%m-%d') if order.date_due else '-' }}</p>
+        <p><strong>Price:</strong> ${{ "%.2f"|format(order.price) }}</p>
+        <p><strong>Payment:</strong> <span class="badge badge-{{ 'success' if order.payment_status=='Paid' else 'error' }}">{{ order.payment_status }}</span></p>
+    </div>
+</div>
+
+<div class="card mt-20">
+    <h3>Order Items</h3>
+    {% if order.items.count() > 0 %}
+    <table>
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Qty</th>
+                <th>Unit Price</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items %}
+            <tr>
+                <td>{{ item.description }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>${{ "%.2f"|format(item.unit_price) }}</td>
+                <td>${{ "%.2f"|format(item.quantity * item.unit_price) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No line items found. (Summary: {{ order.description }})</p>
+    {% endif %}
+</div>
+
+<div class="card mt-20">
+    <h3>Material Usage Tracking</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Material</th>
+                <th>Estimated</th>
+                <th>Real Used</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for om in order.materials %}
+            <tr>
+                <td>{{ om.material.name }}</td>
+                <td>{{ om.quantity_estimated }} {{ om.material.unit }}</td>
+                <td>
+                    {% if om.quantity_real > 0 %}
+                        {{ om.quantity_real }} {{ om.material.unit }}
+                    {% else %}
+                        <span style="color: #999;">Not recorded</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if om.quantity_real == 0 %}
+                        <a href="{{ url_for('orders.confirm_material_usage', id=om.id) }}" class="btn btn-sm btn-primary">Confirm Usage</a>
+                    {% else %}
+                        <span class="badge badge-success">Deducted</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if order.status not in ['Finished', 'Delivered', 'Cancelled'] %}
+    <div style="margin-top: 15px;">
+        <fieldset style="margin-top: 20px; border: 1px solid #999; padding: 10px;">
+            <legend>Add Material</legend>
+            <form action="" method="post" style="display: flex; gap: 10px; align-items: flex-end;">
+                {{ mat_form.hidden_tag() }}
+                <div class="form-group">
+                    {{ mat_form.material_id.label }}<br>
+                    {{ mat_form.material_id(class="form-control") }}
+                    {% for error in mat_form.material_id.errors %}
+                        <span style="color: red; font-size: 0.9em;">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    {{ mat_form.quantity.label }}<br>
+                    {{ mat_form.quantity(class="form-control", placeholder="Est. Qty", style="width: 80px") }}
+                </div>
+                {{ mat_form.submit(class="btn btn-sm btn-secondary") }}
+            </form>
+        </fieldset>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+INNER_EOF
+bash fix_template.sh
+rm fix_template.sh
