@@ -1,6 +1,7 @@
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+from flask import g, has_app_context
 from app.extensions import db, login
 
 @login.user_loader
@@ -109,9 +110,21 @@ class AppSetting(db.Model):
     value = db.Column(db.String(200))
 
     @staticmethod
+    def get_all():
+        """Pre-warm request-level cache with all settings."""
+        if has_app_context():
+            settings = AppSetting.query.all()
+            g.app_settings_cache = {s.key: s.value for s in settings}
+
+    @staticmethod
     def get(key, default=None):
-        setting = AppSetting.query.filter_by(key=key).first()
-        return setting.value if setting else default
+        if has_app_context():
+            if not hasattr(g, 'app_settings_cache'):
+                AppSetting.get_all()
+            return g.app_settings_cache.get(key, default)
+        else:
+            setting = AppSetting.query.filter_by(key=key).first()
+            return setting.value if setting else default
 
     @staticmethod
     def set(key, value):
@@ -122,6 +135,13 @@ class AppSetting(db.Model):
         else:
             setting.value = str(value)
         db.session.commit()
+
+        # Update cache if it exists
+        if has_app_context():
+            if hasattr(g, 'app_settings_cache'):
+                g.app_settings_cache[key] = str(value)
+            else:
+                AppSetting.get_all()
 
 class Machine(db.Model):
     id = db.Column(db.Integer, primary_key=True)

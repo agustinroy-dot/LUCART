@@ -32,6 +32,7 @@ def index():
 
     # Pre-populate form
     if request.method == 'GET':
+        AppSetting.get_all()
         form.electricity_rate.data = float(AppSetting.get('electricity_rate', 0.25))
         form.labor_rate.data = float(AppSetting.get('labor_rate', 20.0))
         form.default_margin.data = float(AppSetting.get('default_margin', 0.30))
