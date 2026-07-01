@@ -13,6 +13,7 @@ from werkzeug.utils import secure_filename
 @settings_bp.route('/', methods=['GET', 'POST'])
 @login_required
 def index():
+    AppSetting.get_all() # Pre-warm cache
     form = SettingsForm()
 
     if form.validate_on_submit():

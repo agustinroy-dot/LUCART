@@ -60,6 +60,7 @@ def view_quote(id):
 @quotes_bp.route('/<int:id>/calculator', methods=['GET', 'POST'])
 @login_required
 def calculator(id):
+    AppSetting.get_all() # Pre-warm cache for settings used in this route
     quote = Quote.query.get_or_404(id)
     form = CalculatorForm()
 
