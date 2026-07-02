@@ -1,6 +1,7 @@
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+from flask import g, has_app_context
 from app.extensions import db, login
 
 @login.user_loader
@@ -107,11 +108,32 @@ class AppSetting(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     key = db.Column(db.String(50), unique=True, index=True)
     value = db.Column(db.String(200))
+    # ⚡ Bolt Optimization: Batch fetch all application settings into a request-local cache
+    # (flask.g) to eliminate N+1 queries when settings are accessed repeatedly during a single request.
+
+    @staticmethod
+    def get_all():
+        if has_app_context():
+            if not hasattr(g, 'app_settings_cache'):
+                settings = AppSetting.query.all()
+                g.app_settings_cache = {s.key: s.value for s in settings}
+            return g.app_settings_cache
+        else:
+            settings = AppSetting.query.all()
+            return {s.key: s.value for s in settings}
+    # ⚡ Bolt Optimization: Serve individual setting checks directly from the request-local cache
+    # if available, avoiding redundant database queries.
 
     @staticmethod
     def get(key, default=None):
+        if has_app_context():
+            cache = AppSetting.get_all()
+            return cache.get(key, default)
+
         setting = AppSetting.query.filter_by(key=key).first()
         return setting.value if setting else default
+    # ⚡ Bolt Optimization: When a setting is updated, ensure the request-local cache
+    # is kept synchronized so subsequent reads in the same request get the fresh value.
 
     @staticmethod
     def set(key, value):
@@ -122,6 +144,11 @@ class AppSetting(db.Model):
         else:
             setting.value = str(value)
         db.session.commit()
+
+        if has_app_context():
+            if not hasattr(g, 'app_settings_cache'):
+                AppSetting.get_all()
+            g.app_settings_cache[key] = str(value)
 
 class Machine(db.Model):
     id = db.Column(db.Integer, primary_key=True)
